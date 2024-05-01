@@ -1,0 +1,127 @@
+ets Jul 29 2019 12:21:46
+
+rst:0x1 (POWERON_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:2
+load:0x3fff0030,len:7172
+load:0x40078000,len:15540
+load:0x40080400,len:4
+ho 8 tail 4 room 4
+load:0x40080404,len:3904
+entry 0x40080640
+[0;32mI (31) boot: ESP-IDF v5.2.1 2nd stage bootloader[0m
+[0;32mI (31) boot: compile time May  1 2024 19:51:16[0m
+[0;32mI (31) boot: Multicore bootloader[0m
+[0;32mI (35) boot: chip revision: v3.0[0m
+[0;32mI (39) boot.esp32: SPI Speed      : 40MHz[0m
+[0;32mI (44) boot.esp32: SPI Mode       : DIO[0m
+[0;32mI (48) boot.esp32: SPI Flash Size : 2MB[0m
+[0;32mI (53) boot: Enabling RNG early entropy source...[0m
+[0;32mI (58) boot: Partition Table:[0m
+[0;32mI (62) boot: ## Label            Usage          Type ST Offset   Length[0m
+[0;32mI (69) boot:  0 nvs              WiFi data        01 02 00009000 00006000[0m
+[0;32mI (77) boot:  1 phy_init         RF data          01 01 0000f000 00001000[0m
+[0;32mI (84) boot:  2 factory          factory app      00 00 00010000 00100000[0m
+[0;32mI (92) boot: End of partition table[0m
+[0;32mI (96) esp_image: segment 0: paddr=00010020 vaddr=3f400020 size=0be60h ( 48736) map[0m
+[0;32mI (121) esp_image: segment 1: paddr=0001be88 vaddr=3ffb0000 size=02284h (  8836) load[0m
+[0;32mI (124) esp_image: segment 2: paddr=0001e114 vaddr=40080000 size=01f04h (  7940) load[0m
+[0;32mI (130) esp_image: segment 3: paddr=00020020 vaddr=400d0020 size=1c798h (116632) map[0m
+[0;32mI (175) esp_image: segment 4: paddr=0003c7c0 vaddr=40081f04 size=0c0c4h ( 49348) load[0m
+[0;32mI (202) boot: Loaded app from partition at offset 0x10000[0m
+[0;32mI (202) boot: Disabling RNG early entropy source...[0m
+[0;32mI (213) cpu_start: Multicore app[0m
+[0;32mI (222) cpu_start: Pro cpu start user code[0m
+[0;32mI (222) cpu_start: cpu freq: 160000000 Hz[0m
+[0;32mI (222) cpu_start: Application information:[0m
+[0;32mI (225) cpu_start: Project name:     ether[0m
+[0;32mI (230) cpu_start: App version:      601a887[0m
+[0;32mI (235) cpu_start: Compile time:     May  1 2024 19:51:10[0m
+[0;32mI (241) cpu_start: ELF file SHA256:  db6383412...[0m
+[0;32mI (246) cpu_start: ESP-IDF:          v5.2.1[0m
+[0;32mI (251) cpu_start: Min chip rev:     v0.0[0m
+[0;32mI (256) cpu_start: Max chip rev:     v3.99 [0m
+[0;32mI (261) cpu_start: Chip rev:         v3.0[0m
+[0;32mI (266) heap_init: Initializing. RAM available for dynamic allocation:[0m
+[0;32mI (273) heap_init: At 3FFAE6E0 len 00001920 (6 KiB): DRAM[0m
+[0;32mI (279) heap_init: At 3FFB2B70 len 0002D490 (181 KiB): DRAM[0m
+[0;32mI (285) heap_init: At 3FFE0440 len 00003AE0 (14 KiB): D/IRAM[0m
+[0;32mI (291) heap_init: At 3FFE4350 len 0001BCB0 (111 KiB): D/IRAM[0m
+[0;32mI (298) heap_init: At 4008DFC8 len 00012038 (72 KiB): IRAM[0m
+[0;32mI (305) spi_flash: detected chip: generic[0m
+[0;32mI (308) spi_flash: flash io: dio[0m
+[0;33mW (312) spi_flash: Detected size(4096k) larger than the size in the binary image header(2048k). Using the size in the binary image header.[0m
+[0;33mW (326) i2c: This driver is an old driver, please migrate your application code to adapt `driver/i2c_master.h`[0m
+[0;32mI (337) main_task: Started on CPU0[0m
+[0;32mI (347) main_task: Calling app_main()[0m
+[0;32mI (347) I2C_CONTROLLER_CONFIG: i2c_controller_init: OK[0m
+[0;32mI (347) main_task: Returned from app_main()[0m
+[0;32mI (347) I2C_CONTROLLER_SEND: i2c_controller_send: OK[0m
+[0;32mI (357) I2C_CONTROLLER_SEND: i2c_controller_send: OK[0m
+[0;32mI (367) I2C_CONTROLLER_SEND: i2c_controller_send: OK[0m
+[0;32mI (367) I2C_CONTROLLER_SEND: i2c_controller_send: OK[0m
+[0;32mI (377) I2C_CONTROLLER_RECEIVE: i2c_controller_receive: OK[0m
+[0;32mI (387) I2C_CONTROLLER_RECEIVE: i2c_controller_receive: OK[0m
+[0;32mI (387) I2C_CONTROLLER_RECEIVE: i2c_controller_receive: OK[0m
+[0;32mI (397) I2C_CONTROLLER_RECEIVE: i2c_controller_receive: OK[0m
+[0;32mI (397) I2C_CONTROLLER_SEND: i2c_controller_send: OK[0m
+[0;32mI (907) I2C_CONTROLLER_RECEIVE: i2c_controller_receive: OK[0m
+[0;32mI (907) I2C_CONTROLLER_RECEIVE: i2c_controller_receive: OK[0m
+[0;32mI (907) I2C_CONTROLLER_RECEIVE: i2c_controller_receive: OK[0m
+[0;32mI (907) BME280_TASK: humidity = 26.086879
+[0m
+[0;32mI (917) BME280_TASK: pressure = 95450.378710
+[0m
+[0;32mI (917) BME280_TASK: temperature = 25.340905
+[0m
+[0;32mI (1427) I2C_CONTROLLER_SEND: i2c_controller_send: OK[0m
+[0;32mI (1927) I2C_CONTROLLER_RECEIVE: i2c_controller_receive: OK[0m
+[0;32mI (1927) I2C_CONTROLLER_RECEIVE: i2c_controller_receive: OK[0m
+[0;32mI (1927) I2C_CONTROLLER_RECEIVE: i2c_controller_receive: OK[0m
+[0;32mI (1927) BME280_TASK: humidity = 25.445181
+[0m
+[0;32mI (1937) BME280_TASK: pressure = 99292.770894
+[0m
+[0;32mI (1937) BME280_TASK: temperature = 25.346042
+[0m
+[0;32mI (2447) I2C_CONTROLLER_SEND: i2c_controller_send: OK[0m
+[0;32mI (2947) I2C_CONTROLLER_RECEIVE: i2c_controller_receive: OK[0m
+[0;32mI (2947) I2C_CONTROLLER_RECEIVE: i2c_controller_receive: OK[0m
+[0;32mI (2947) I2C_CONTROLLER_RECEIVE: i2c_controller_receive: OK[0m
+[0;32mI (2947) BME280_TASK: humidity = 25.485594
+[0m
+[0;32mI (2957) BME280_TASK: pressure = 99293.546661
+[0m
+[0;32mI (2957) BME280_TASK: temperature = 25.335767
+[0m
+[0;32mI (3467) I2C_CONTROLLER_SEND: i2c_controller_send: OK[0m
+[0;32mI (3967) I2C_CONTROLLER_RECEIVE: i2c_controller_receive: OK[0m
+[0;32mI (3967) I2C_CONTROLLER_RECEIVE: i2c_controller_receive: OK[0m
+[0;32mI (3967) I2C_CONTROLLER_RECEIVE: i2c_controller_receive: OK[0m
+[0;32mI (3967) BME280_TASK: humidity = 25.497488
+[0m
+[0;32mI (3977) BME280_TASK: pressure = 99286.399859
+[0m
+[0;32mI (3977) BME280_TASK: temperature = 25.346042
+[0m
+[0;32mI (4487) I2C_CONTROLLER_SEND: i2c_controller_send: OK[0m
+[0;32mI (4987) I2C_CONTROLLER_RECEIVE: i2c_controller_receive: OK[0m
+[0;32mI (4987) I2C_CONTROLLER_RECEIVE: i2c_controller_receive: OK[0m
+[0;32mI (4987) I2C_CONTROLLER_RECEIVE: i2c_controller_receive: OK[0m
+[0;32mI (4987) BME280_TASK: humidity = 25.508774
+[0m
+[0;32mI (4997) BME280_TASK: pressure = 99290.748980
+[0m
+[0;32mI (4997) BME280_TASK: temperature = 25.340905
+[0m
+[0;32mI (5507) I2C_CONTROLLER_SEND: i2c_controller_send: OK[0m
+[0;32mI (6007) I2C_CONTROLLER_RECEIVE: i2c_controller_receive: OK[0m
+[0;32mI (6007) I2C_CONTROLLER_RECEIVE: i2c_controller_receive: OK[0m
+[0;32mI (6007) I2C_CONTROLLER_RECEIVE: i2c_controller_receive: OK[0m
+[0;32mI (6007) BME280_TASK: humidity = 25.503131
+[0m
+[0;32mI (6017) BME280_TASK: pressure = 99289.973235
+[0m
+[0;32mI (6017) BME280_TASK: temperature = 25.335767
+[0m

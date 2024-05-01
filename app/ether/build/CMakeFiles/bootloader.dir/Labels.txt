@@ -1,0 +1,13 @@
+# Target labels
+ bootloader
+# Source files and their labels
+/Users/babinicz/Documents/workspace/project-ether/app/ether/build/CMakeFiles/bootloader
+/Users/babinicz/Documents/workspace/project-ether/app/ether/build/CMakeFiles/bootloader.rule
+/Users/babinicz/Documents/workspace/project-ether/app/ether/build/CMakeFiles/bootloader-complete.rule
+/Users/babinicz/Documents/workspace/project-ether/app/ether/build/bootloader-prefix/src/bootloader-stamp/bootloader-build.rule
+/Users/babinicz/Documents/workspace/project-ether/app/ether/build/bootloader-prefix/src/bootloader-stamp/bootloader-configure.rule
+/Users/babinicz/Documents/workspace/project-ether/app/ether/build/bootloader-prefix/src/bootloader-stamp/bootloader-download.rule
+/Users/babinicz/Documents/workspace/project-ether/app/ether/build/bootloader-prefix/src/bootloader-stamp/bootloader-install.rule
+/Users/babinicz/Documents/workspace/project-ether/app/ether/build/bootloader-prefix/src/bootloader-stamp/bootloader-mkdir.rule
+/Users/babinicz/Documents/workspace/project-ether/app/ether/build/bootloader-prefix/src/bootloader-stamp/bootloader-patch.rule
+/Users/babinicz/Documents/workspace/project-ether/app/ether/build/bootloader-prefix/src/bootloader-stamp/bootloader-update.rule
