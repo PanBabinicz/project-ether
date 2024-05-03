@@ -11,13 +11,8 @@
 #include "pms7003.h"
 #include "bme280.h"
 #include "i2c_controller.h"
-
-static const int RX_BUF_SIZE = 1024;
-
-#define TXD_PIN (GPIO_NUM_17)
-#define RXD_PIN (GPIO_NUM_16)
-
-const uart_port_t uart_num = UART_NUM_2;
+#include "mqtt_client.h"
+#include "uart_controller.h"
 
 SemaphoreHandle_t wake_up_semaphore, sleep_semaphore, rx_semaphore, tx_semaphore, print_semaphore, bme280_semaphore;
 
@@ -27,20 +22,8 @@ const TickType_t delay_500ms = pdMS_TO_TICKS(500);
 const TickType_t delay_200ms = pdMS_TO_TICKS(200);
 
 void init(void) {
-  const uart_config_t uart_config = {
-    .baud_rate = 9600,
-    .data_bits = UART_DATA_8_BITS,
-    .parity = UART_PARITY_DISABLE,
-    .stop_bits = UART_STOP_BITS_1,
-    .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
-    .source_clk = UART_SCLK_DEFAULT,
-  };
-
-  uart_driver_install(uart_num, RX_BUF_SIZE * 2, 0, 0, NULL, 0);
-  uart_param_config(uart_num, &uart_config);
-  uart_set_pin(uart_num, TXD_PIN, RXD_PIN, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
-
-  i2c_controller_init(&i2c_controller_default_descriptor);
+  uart_controller_init(&uart_controller_descriptor_default);
+  i2c_controller_init(&i2c_controller_descriptor_default);
 }
 
 static uint16_t convert_to_little_endian(uint16_t data) {
@@ -57,8 +40,8 @@ static void tx_task(void *arg) {
     vTaskDelay(5*delay_500ms);
 
     for (int i = 0; i < 5; ++i) {
-      uart_flush(uart_num);
-      pms7003_frame_send(pms7003_read_request, uart_num);
+      uart_flush(uart_controller_descriptor_default.uart_port);
+      pms7003_frame_send(pms7003_read_request, uart_controller_descriptor_default.uart_port);
       vTaskDelay(delay_500ms);
     }
 
@@ -81,7 +64,7 @@ static void rx_task(void *arg) {
   while (1) {
     xSemaphoreTake(rx_semaphore, portMAX_DELAY);
 
-    pms7003_frame_receive(pms7003_read, uart_num, frame); 
+    pms7003_frame_receive(pms7003_read, uart_controller_descriptor_default.uart_port, frame); 
 
     vTaskDelay(delay_500ms);
 
@@ -111,8 +94,9 @@ static void print_measurements_task(void *arg) {
 
     ESP_LOG_BUFFER_HEXDUMP(PRINT_MEASUREMENTS_TASK_TAG, frame->buffer_answer, PMS7003_FRAME_ANSWER_SIZE, ESP_LOG_INFO);
 
-    vTaskDelay(delay_60s);
-    xSemaphoreGive(wake_up_semaphore);
+    // vTaskDelay(delay_60s);
+    vTaskDelay(delay_500ms);
+    xSemaphoreGive(bme280_semaphore);
   }
 }
 
@@ -123,7 +107,7 @@ static void sleep_task(void *arg) {
   while (1) {
     xSemaphoreTake(sleep_semaphore, portMAX_DELAY);
     
-    pms7003_frame_send(pms7003_sleep, uart_num);
+    pms7003_frame_send(pms7003_sleep, uart_controller_descriptor_default.uart_port);
 
     vTaskDelay(delay_500ms);
 
@@ -138,7 +122,7 @@ static void wake_up_task(void *arg) {
   while (1) {
     xSemaphoreTake(wake_up_semaphore, portMAX_DELAY);
 
-    pms7003_frame_send(pms7003_wakeup, uart_num);
+    pms7003_frame_send(pms7003_wakeup, uart_controller_descriptor_default.uart_port);
 
     vTaskDelay(delay_500ms);
 
@@ -160,26 +144,26 @@ static void bme280_task(void *arg) {
 
   uint8_t data = 0;
   
-  bme280_reset(i2c_controller_default_descriptor.i2c_num);
-  bme280_init(i2c_controller_default_descriptor.i2c_num, &bme280_default_settings);
-  bme280_id(i2c_controller_default_descriptor.i2c_num, &data, sizeof(data));
+  bme280_reset(i2c_controller_descriptor_default.i2c_num);
+  bme280_init(i2c_controller_descriptor_default.i2c_num, &bme280_default_settings);
+  bme280_id(i2c_controller_descriptor_default.i2c_num, &data, sizeof(data));
 
   if (data != BME280_DATA_ID) {
     ESP_LOGI(BME280_TASK_TAG, "The id is not valid!\n\rClosing bme280 task...\n\r");
     vTaskDelete(xTaskGetCurrentTaskHandle());
   }
 
-  bme280_get_compensation_data(i2c_controller_default_descriptor.i2c_num, &bme280_measurements->compensator);
+  bme280_get_compensation_data(i2c_controller_descriptor_default.i2c_num, &bme280_measurements->compensator);
 
   while (1) {
     xSemaphoreTake(bme280_semaphore, portMAX_DELAY);
 
-    bme280_force_mode(i2c_controller_default_descriptor.i2c_num, &bme280_default_settings);
+    bme280_force_mode(i2c_controller_descriptor_default.i2c_num, &bme280_default_settings);
     vTaskDelay(delay_500ms);
 
-    bme280_measure_humidity(i2c_controller_default_descriptor.i2c_num, &bme280_measurements->humidity);
-    bme280_measure_pressure(i2c_controller_default_descriptor.i2c_num, &bme280_measurements->pressure);
-    bme280_measure_temperature(i2c_controller_default_descriptor.i2c_num, &bme280_measurements->temperature);
+    bme280_measure_humidity(i2c_controller_descriptor_default.i2c_num, &bme280_measurements->humidity);
+    bme280_measure_pressure(i2c_controller_descriptor_default.i2c_num, &bme280_measurements->pressure);
+    bme280_measure_temperature(i2c_controller_descriptor_default.i2c_num, &bme280_measurements->temperature);
 
     bme280_compensate_humidity(&bme280_measurements->compensator, &bme280_measurements->humidity);
     bme280_compensate_pressure(&bme280_measurements->compensator, &bme280_measurements->pressure);
@@ -189,9 +173,9 @@ static void bme280_task(void *arg) {
     ESP_LOGI(BME280_TASK_TAG, "pressure = %f\n\r", bme280_measurements->pressure.compensated);
     ESP_LOGI(BME280_TASK_TAG, "temperature = %f\n\r", bme280_measurements->temperature.compensated);
 
-    vTaskDelay(delay_500ms);
+    vTaskDelay(delay_60s);
 
-    xSemaphoreGive(bme280_semaphore);
+    xSemaphoreGive(wake_up_semaphore);
   }
 }
 
@@ -202,7 +186,7 @@ void app_main(void) {
 
   init();
 
-  pms7003_frame_send(pms7003_change_mode_passive, uart_num);
+  pms7003_frame_send(pms7003_change_mode_passive, uart_controller_descriptor_default.uart_port);
 
   sleep_semaphore = xSemaphoreCreateBinary();
   wake_up_semaphore = xSemaphoreCreateBinary();
@@ -211,8 +195,8 @@ void app_main(void) {
   print_semaphore = xSemaphoreCreateBinary();
   bme280_semaphore = xSemaphoreCreateBinary();
 
-  // xSemaphoreGive(wake_up_semaphore);
-  xSemaphoreGive(bme280_semaphore);
+  xSemaphoreGive(wake_up_semaphore);
+  // xSemaphoreGive(bme280_semaphore);
 
   xTaskCreate(wake_up_task, "wake_up_task", 1024 * 2, NULL, configMAX_PRIORITIES - 1, NULL);
   xTaskCreate(sleep_task, "sleep_task", 1024 * 2, NULL, configMAX_PRIORITIES - 1, NULL);

@@ -1,6 +1,6 @@
 #include "i2c_controller.h"
 
-const i2c_controller_descriptor_t i2c_controller_default_descriptor = I2C_CONTROLLER_DEFAULT_DESCRIPTOR;
+const i2c_controller_descriptor_t i2c_controller_descriptor_default = I2C_CONTROLLER_DESCRIPTOR_DEFAULT;
 static const TickType_t ticks = pdMS_TO_TICKS(10000);
 
 i2c_controller_result_t i2c_controller_init(const i2c_controller_descriptor_t *descriptor) {
