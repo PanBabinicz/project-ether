@@ -13,6 +13,7 @@
 #include "i2c_controller.h"
 #include "mqtt_client.h"
 #include "uart_controller.h"
+#include "wifi_controller.h"
 
 SemaphoreHandle_t wake_up_semaphore, sleep_semaphore, rx_semaphore, tx_semaphore, print_semaphore, bme280_semaphore;
 
@@ -22,6 +23,7 @@ const TickType_t delay_500ms = pdMS_TO_TICKS(500);
 const TickType_t delay_200ms = pdMS_TO_TICKS(200);
 
 void init(void) {
+  wifi_controller_init(&wifi_controller_descriptor_default);
   uart_controller_init(&uart_controller_descriptor_default);
   i2c_controller_init(&i2c_controller_descriptor_default);
 }

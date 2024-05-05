@@ -8,8 +8,8 @@
 #include "hal/uart_types.h"
 
 typedef enum {
-  UART_CONTROLLER_SUCCESS = 0,
-  UART_CONTROLLER_ERROR,
+  UART_CONTROLLER_RESULT_SUCCESS = 0,
+  UART_CONTROLLER_RESULT_ERROR,
 } uart_controller_result_t;
 
 typedef struct {
