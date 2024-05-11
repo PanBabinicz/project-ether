@@ -32,7 +32,7 @@ typedef struct {
   i2c_port_t i2c_num;
 } i2c_controller_descriptor_t;
 
-#define I2C_CONTROLLER_DEFAULT_CONFIG { \
+#define I2C_CONTROLLER_CONFIG_DEFAULT { \
   .mode = I2C_MODE_MASTER, \
   .sda_io_num = I2C_CONTROLLER_MASTER_SDA_IO, \
   .sda_pullup_en = GPIO_PULLUP_ENABLE, \
@@ -41,12 +41,12 @@ typedef struct {
   .master.clk_speed = I2C_CONTROLLER_MASTER_FREQ_HZ \
 }
 
-#define I2C_CONTROLLER_DEFAULT_DESCRIPTOR { \
-  .config = I2C_CONTROLLER_DEFAULT_CONFIG, \
+#define I2C_CONTROLLER_DESCRIPTOR_DEFAULT { \
+  .config = I2C_CONTROLLER_CONFIG_DEFAULT, \
   .i2c_num = I2C_NUM_0 \
 }
 
-extern const i2c_controller_descriptor_t i2c_controller_default_descriptor;
+extern const i2c_controller_descriptor_t i2c_controller_descriptor_default;
 
 i2c_controller_result_t i2c_controller_init(const i2c_controller_descriptor_t *descriptor);
 i2c_controller_result_t i2c_controller_send(i2c_port_t i2c_num, uint8_t address, uint8_t reg, const uint8_t *data, size_t data_len);
