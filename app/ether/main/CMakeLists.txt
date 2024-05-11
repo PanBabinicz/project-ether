@@ -6,6 +6,7 @@ idf_component_register(
     "../src/i2c_controller.c" 
     "../src/uart_controller.c" 
     "../src/wifi_controller.c"
+    "../src/mqtt_controller.c"
   INCLUDE_DIRS 
     "." 
     "../inc"

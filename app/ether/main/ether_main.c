@@ -14,18 +14,25 @@
 #include "mqtt_client.h"
 #include "uart_controller.h"
 #include "wifi_controller.h"
+#include "mqtt_controller.h"
 
 SemaphoreHandle_t wake_up_semaphore, sleep_semaphore, rx_semaphore, tx_semaphore, print_semaphore, bme280_semaphore;
 
 const TickType_t delay_60s = pdMS_TO_TICKS(60000);
 const TickType_t delay_10s = pdMS_TO_TICKS(10000);
+const TickType_t delay_1s = pdMS_TO_TICKS(1000);
 const TickType_t delay_500ms = pdMS_TO_TICKS(500);
 const TickType_t delay_200ms = pdMS_TO_TICKS(200);
 
 void init(void) {
   wifi_controller_init(&wifi_controller_descriptor_default);
+  vTaskDelay(delay_1s);
   uart_controller_init(&uart_controller_descriptor_default);
+  vTaskDelay(delay_1s);
   i2c_controller_init(&i2c_controller_descriptor_default);
+  vTaskDelay(delay_1s);
+  mqtt_controller_init(&mqtt_controller_descriptor_default);
+  vTaskDelay(delay_1s);
 }
 
 static uint16_t convert_to_little_endian(uint16_t data) {
@@ -183,9 +190,15 @@ static void bme280_task(void *arg) {
 
 void app_main(void) {
   pms7003_frame_answer_t pms7003_frame = { 0 };
-
   bme280_measurements_t bme280_measurements = { 0 };
 
+  esp_err_t ret = nvs_flash_init();
+  if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND)
+  {
+    ESP_ERROR_CHECK(nvs_flash_erase());
+    ret = nvs_flash_init();
+  }
+  ESP_ERROR_CHECK(ret);
   init();
 
   pms7003_frame_send(pms7003_change_mode_passive, uart_controller_descriptor_default.uart_port);
