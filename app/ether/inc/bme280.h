@@ -103,8 +103,8 @@
 #define BME280_SIZE_COMP  (0x21)
 
 /** 
- * \ param
- * \ param
+ * \param
+ * \param
  */
 typedef enum {
   BME280_RESULT_SUCCESS = 0,
@@ -112,8 +112,8 @@ typedef enum {
 } bme280_result_t;
 
 /** 
- * \ param
- * \ param
+ * \param
+ * \param
  */
 typedef enum {
   BME280_STATUS_MEASURING = 0,
@@ -121,8 +121,8 @@ typedef enum {
 } bme280_status_t;
 
 /** 
- * \ param
- * \ param
+ * \param
+ * \param
  */
 typedef struct {
   uint8_t ctrl_hum;
@@ -131,8 +131,8 @@ typedef struct {
 } bme280_settings_t;
 
 /** 
- * \ param
- * \ param
+ * \param
+ * \param
  */
 typedef struct {
   uint8_t msb;
@@ -142,8 +142,8 @@ typedef struct {
 } bme280_pressure_t;
 
 /** 
- * \ param
- * \ param
+ * \param
+ * \param
  */
 typedef struct {
   uint8_t msb;
@@ -153,8 +153,8 @@ typedef struct {
 } bme280_temperature_t;
 
 /** 
- * \ param
- * \ param
+ * \param
+ * \param
  */
 typedef struct {
   uint8_t msb;
@@ -163,8 +163,8 @@ typedef struct {
 } bme280_humidity_t;
 
 /** 
- * \ param
- * \ param
+ * \param
+ * \param
  */
 typedef struct {
   uint16_t  dig_t1;
@@ -188,8 +188,8 @@ typedef struct {
 } bme280_compensator_t;
 
 /** 
- * \ param
- * \ param
+ * \param
+ * \param
  */
 typedef struct {
   bme280_humidity_t humidity;
@@ -210,85 +210,85 @@ typedef struct {
 }
 
 /** 
- * \ param
- * \ param
+ * \param
+ * \param
  */
 extern const bme280_settings_t bme280_default_settings;
 
 /** 
- * \ param
- * \ param
+ * \param
+ * \param
  */
 bme280_result_t bme280_init(i2c_port_t i2c_num, const bme280_settings_t *settings);
 
 /** 
- * \ param
- * \ param
+ * \param
+ * \param
  */
 bme280_result_t bme280_reset(i2c_port_t i2c_num);
 
 /** 
- * \ param
- * \ param
+ * \param
+ * \param
  */
 bme280_result_t bme280_id(i2c_port_t i2c_num, uint8_t *data, size_t data_len);
 
 /** 
- * \ param
- * \ param
+ * \param
+ * \param
  */
 bme280_result_t bme280_force_mode(i2c_port_t i2c_num, const bme280_settings_t *settings);
 
 /** 
- * \ param
- * \ param
+ * \param
+ * \param
  */
 bme280_result_t bme280_measure_humidity(i2c_port_t i2c_num, bme280_humidity_t *humidity);
 
 /** 
- * \ param
- * \ param
+ * \param
+ * \param
  */
 bme280_result_t bme280_measure_temperature(i2c_port_t i2c_num, 
                                            bme280_temperature_t *temperature);
 
 /** 
- * \ param
- * \ param
+ * \param
+ * \param
  */
 bme280_result_t bme280_measure_pressure(i2c_port_t i2c_num, bme280_pressure_t *pressure);
 
 /** 
- * \ param
- * \ param
+ * \param
+ * \param
  */
 bme280_result_t bme280_get_compensation_data(i2c_port_t i2c_num, 
                                              bme280_compensator_t *compensator);
 
 /** 
- * \ param
- * \ param
+ * \param
+ * \param
  */
 bme280_result_t bme280_compensate_humidity(bme280_compensator_t *compensator, 
                                            bme280_humidity_t *humidity);
 
 /** 
- * \ param
- * \ param
+ * \param
+ * \param
  */
 bme280_result_t bme280_compensate_temperature(bme280_compensator_t *compensator, 
                                               bme280_temperature_t *temperature);
 
 /** 
- * \ param
- * \ param
+ * \param
+ * \param
  */
 bme280_result_t bme280_compensate_pressure(bme280_compensator_t *compensator, 
                                            bme280_pressure_t *pressure);
 
 /** 
- * \ param
- * \ param
+ * \param
+ * \param
  */
 bme280_status_t bme280_status(i2c_port_t i2c_num);
 

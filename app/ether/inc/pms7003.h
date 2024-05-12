@@ -18,8 +18,8 @@
 #define PMS7003_UART_WAIT_TIMEOUT_MS  (0x64)
 
 /** 
- * \ param
- * \ param
+ * \param
+ * \param
  */
 typedef union {
   struct {
@@ -36,8 +36,8 @@ typedef union {
 } pms7003_frame_request_t;
 
 /** 
- * \ param
- * \ param
+ * \param
+ * \param
  */
 typedef union {
   struct {
@@ -63,8 +63,8 @@ typedef union {
 } pms7003_frame_answer_t;
 
 /** 
- * \ param
- * \ param
+ * \param
+ * \param
  */
 typedef enum {
   PMS7003_RESULT_SUCCESS = 0,
@@ -75,8 +75,8 @@ typedef enum {
 } pms7003_result_t;
 
 /** 
- * \ param
- * \ param
+ * \param
+ * \param
  */
 typedef enum {
   PMS7003_STATUS_OK = 0,
@@ -84,133 +84,133 @@ typedef enum {
 } pms7003_status_t;
 
 /** 
- * \ param
- * \ param
+ * \param
+ * \param
  */
-#define PMS7003_FRAME_READ { \
-  .start_byte_1 = PMS7003_START_CHARACTER_1, \
-  .start_byte_2 = PMS7003_START_CHARACTER_2, \
-  .command = PMS7003_CMD_READ, \
-  .data_h = 0x00, \
-  .data_l = 0x00, \
-  .lrch = 0x01, \
-  .lrcl = 0x71 \
+#define PMS7003_FRAME_READ {                  \
+  .start_byte_1 = PMS7003_START_CHARACTER_1,  \
+  .start_byte_2 = PMS7003_START_CHARACTER_2,  \
+  .command = PMS7003_CMD_READ,                \
+  .data_h = 0x00,                             \
+  .data_l = 0x00,                             \
+  .lrch = 0x01,                               \
+  .lrcl = 0x71,                               \
 } 
 
 /** 
- * \ param
- * \ param
+ * \param
+ * \param
  */
-#define PMS7003_FRAME_CHANGE_MODE_PASSIVE { \
-  .start_byte_1 = PMS7003_START_CHARACTER_1, \
-  .start_byte_2 = PMS7003_START_CHARACTER_2, \
-  .command = PMS7003_CMD_CHANGE_MODE, \
-  .data_h = 0x00, \
-  .data_l = 0x00, \
-  .lrch = 0x01, \
-  .lrcl = 0x70 \
+#define PMS7003_FRAME_CHANGE_MODE_PASSIVE {   \
+  .start_byte_1 = PMS7003_START_CHARACTER_1,  \
+  .start_byte_2 = PMS7003_START_CHARACTER_2,  \
+  .command = PMS7003_CMD_CHANGE_MODE,         \
+  .data_h = 0x00,                             \
+  .data_l = 0x00,                             \
+  .lrch = 0x01,                               \
+  .lrcl = 0x70,                               \
 } 
 
 /** 
- * \ param
- * \ param
+ * \param
+ * \param
  */
-#define PMS7003_FRAME_CHANGE_MODE_ACTIVE { \
-  .start_byte_1 = PMS7003_START_CHARACTER_1, \
-  .start_byte_2 = PMS7003_START_CHARACTER_2, \
-  .command = PMS7003_CMD_CHANGE_MODE, \
-  .data_h = 0x00, \
-  .data_l = 0x01, \
-  .lrch = 0x01, \
-  .lrcl = 0x71 \
+#define PMS7003_FRAME_CHANGE_MODE_ACTIVE {    \
+  .start_byte_1 = PMS7003_START_CHARACTER_1,  \
+  .start_byte_2 = PMS7003_START_CHARACTER_2,  \
+  .command = PMS7003_CMD_CHANGE_MODE,         \
+  .data_h = 0x00,                             \
+  .data_l = 0x01,                             \
+  .lrch = 0x01,                               \
+  .lrcl = 0x71,                               \
 } 
 
 /** 
- * \ param
- * \ param
+ * \param
+ * \param
  */
-#define PMS7003_FRAME_SLEEP { \
-  .start_byte_1 = PMS7003_START_CHARACTER_1, \
-  .start_byte_2 = PMS7003_START_CHARACTER_2, \
-  .command = PMS7003_CMD_SLEEP_SET, \
-  .data_h = 0x00, \
-  .data_l = 0x00, \
-  .lrch = 0x01, \
-  .lrcl = 0x73 \
+#define PMS7003_FRAME_SLEEP {                 \
+  .start_byte_1 = PMS7003_START_CHARACTER_1,  \
+  .start_byte_2 = PMS7003_START_CHARACTER_2,  \
+  .command = PMS7003_CMD_SLEEP_SET,           \
+  .data_h = 0x00,                             \
+  .data_l = 0x00,                             \
+  .lrch = 0x01,                               \
+  .lrcl = 0x73,                               \
 } 
 
 /** 
- * \ param
- * \ param
+ * \param
+ * \param
  */
-#define PMS7003_FRAME_WAKEUP { \
-  .start_byte_1 = PMS7003_START_CHARACTER_1, \
-  .start_byte_2 = PMS7003_START_CHARACTER_2, \
-  .command = PMS7003_CMD_SLEEP_SET, \
-  .data_h = 0x00, \
-  .data_l = 0x01, \
-  .lrch = 0x01, \
-  .lrcl = 0x74 \
+#define PMS7003_FRAME_WAKEUP {                \
+  .start_byte_1 = PMS7003_START_CHARACTER_1,  \
+  .start_byte_2 = PMS7003_START_CHARACTER_2,  \
+  .command = PMS7003_CMD_SLEEP_SET,           \
+  .data_h = 0x00,                             \
+  .data_l = 0x01,                             \
+  .lrch = 0x01,                               \
+  .lrcl = 0x74,                               \
 } 
 
 /** 
- * \ param
- * \ param
+ * \param
+ * \param
  */
 typedef int32_t (*pms7003_callback_sent_t)(uart_port_t);
 
 /** 
- * \ param
- * \ param
+ * \param
+ * \param
  */
 typedef int32_t (*pms7003_callback_received_t)(uart_port_t, pms7003_frame_answer_t *);
 
 /** 
- * \ param
- * \ param
+ * \param
+ * \param
  */
 pms7003_result_t pms7003_frame_send(const pms7003_callback_sent_t handler, uart_port_t uart_num);
 
 /** 
- * \ param
- * \ param
+ * \param
+ * \param
  */
 pms7003_result_t pms7003_frame_receive(const pms7003_callback_received_t handler, 
                                        uart_port_t uart_num, pms7003_frame_answer_t *frame);
 
 /** 
- * \ param
- * \ param
+ * \param
+ * \param
  */
 int32_t pms7003_read_request(uart_port_t uart_num);
 
 /** 
- * \ param
- * \ param
+ * \param
+ * \param
  */
 int32_t pms7003_change_mode_passive(uart_port_t uart_num);
 
 /** 
- * \ param
- * \ param
+ * \param
+ * \param
  */
 int32_t pms7003_change_mode_active(uart_port_t uart_num);
 
 /** 
- * \ param
- * \ param
+ * \param
+ * \param
  */
 int32_t pms7003_sleep(uart_port_t uart_num);
 
 /** 
- * \ param
- * \ param
+ * \param
+ * \param
  */
 int32_t pms7003_wakeup(uart_port_t uart_num);
 
 /** 
- * \ param
- * \ param
+ * \param
+ * \param
  */
 int32_t pms7003_read(uart_port_t uart_num, pms7003_frame_answer_t *frame);
 

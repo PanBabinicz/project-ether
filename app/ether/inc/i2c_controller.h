@@ -23,8 +23,8 @@
 #define I2C_CONTROLLER_MASTER_RX_BUF_DISABLE  (0)               /*!< I2C master doesn't need buffer */
 
 /** 
- * \ param
- * \ param
+ * \param
+ * \param
  */
 typedef enum {
   I2C_CONTROLLER_RESULT_SUCCESS = 0,
@@ -32,8 +32,8 @@ typedef enum {
 } i2c_controller_result_t;
 
 /** 
- * \ param
- * \ param
+ * \param
+ * \param
  */
 typedef struct {
   i2c_config_t config;
@@ -41,50 +41,50 @@ typedef struct {
 } i2c_controller_descriptor_t;
 
 /** 
- * \ param
- * \ param
+ * \param
+ * \param
  */
-#define I2C_CONTROLLER_CONFIG_DEFAULT { \
-  .mode = I2C_MODE_MASTER, \
-  .sda_io_num = I2C_CONTROLLER_MASTER_SDA_IO, \
-  .sda_pullup_en = GPIO_PULLUP_ENABLE, \
-  .scl_io_num = I2C_CONTROLLER_MASTER_SCL_IO, \
-  .scl_pullup_en = GPIO_PULLUP_ENABLE, \
-  .master.clk_speed = I2C_CONTROLLER_MASTER_FREQ_HZ \
+#define I2C_CONTROLLER_CONFIG_DEFAULT {               \
+  .mode = I2C_MODE_MASTER,                            \
+  .sda_io_num = I2C_CONTROLLER_MASTER_SDA_IO,         \
+  .sda_pullup_en = GPIO_PULLUP_ENABLE,                \
+  .scl_io_num = I2C_CONTROLLER_MASTER_SCL_IO,         \
+  .scl_pullup_en = GPIO_PULLUP_ENABLE,                \
+  .master.clk_speed = I2C_CONTROLLER_MASTER_FREQ_HZ,  \
 }
 
 /** 
- * \ param
- * \ param
+ * \param
+ * \param
  */
 #define I2C_CONTROLLER_DESCRIPTOR_DEFAULT { \
-  .config = I2C_CONTROLLER_CONFIG_DEFAULT, \
-  .i2c_num = I2C_NUM_0 \
+  .config = I2C_CONTROLLER_CONFIG_DEFAULT,  \
+  .i2c_num = I2C_NUM_0,                     \
 }
 
 /** 
- * \ param
- * \ param
+ * \param
+ * \param
  */
 extern const i2c_controller_descriptor_t i2c_controller_descriptor_default;
 
 /** 
- * \ param
- * \ param
+ * \param
+ * \param
  */
 i2c_controller_result_t i2c_controller_init(const i2c_controller_descriptor_t *descriptor);
 
 /** 
- * \ param
- * \ param
+ * \param
+ * \param
  */
 i2c_controller_result_t i2c_controller_send(i2c_port_t i2c_num, uint8_t address, 
                                             uint8_t reg, const uint8_t *data, 
                                             size_t data_len);
 
 /** 
- * \ param
- * \ param
+ * \param
+ * \param
  */
 i2c_controller_result_t i2c_controller_receive(i2c_port_t i2c_num, uint8_t address, 
                                                uint8_t reg, uint8_t *data, 
