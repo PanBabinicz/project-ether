@@ -4,7 +4,9 @@ static EventGroupHandle_t event_group;
 
 const wifi_controller_descriptor_t wifi_controller_descriptor_default = WIFI_CONTROLLER_DESCRIPTOR_DEFAULT;
 
-void wifi_controller_event_handler(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data) {
+void wifi_controller_event_handler(void *arg, esp_event_base_t event_base, 
+                                   int32_t event_id, void *event_data) 
+{
   const char *TAG = "WIFI_CONTROLLER_EVENT_HANDLER";
   uint8_t current_retry_num = 0;
 
@@ -27,19 +29,13 @@ void wifi_controller_event_handler(void *arg, esp_event_base_t event_base, int32
   }
 }
 
-wifi_controller_result_t wifi_controller_init(const wifi_controller_descriptor_t *wifi_controller_descriptor) {
+wifi_controller_result_t wifi_controller_init(const wifi_controller_descriptor_t *wifi_controller_descriptor) 
+{
   const char *TAG = "WIFI_CONTROLLER_INIT";
 
   if (!wifi_controller_descriptor) {
     return WIFI_CONTROLLER_RESULT_ERROR;
   }
-
-  // esp_err_t ret = nvs_flash_init();
-  // if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
-  //   ESP_ERROR_CHECK(nvs_flash_erase());
-  //   ret = nvs_flash_init();
-  // }
-  // ESP_ERROR_CHECK(ret);
 
   event_group = xEventGroupCreate();
 
@@ -58,6 +54,7 @@ wifi_controller_result_t wifi_controller_init(const wifi_controller_descriptor_t
                                                       wifi_controller_descriptor->event_handler,
                                                       NULL,
                                                       &instance_any_id));
+
   ESP_ERROR_CHECK(esp_event_handler_instance_register(IP_EVENT,
                                                       IP_EVENT_STA_GOT_IP,
                                                       wifi_controller_descriptor->event_handler,

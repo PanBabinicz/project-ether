@@ -2,7 +2,8 @@
 
 static const char *TAG = "pms7003";
 
-pms7003_result_t pms7003_frame_send(const pms7003_callback_sent_t handler, uart_port_t uart_num) {
+pms7003_result_t pms7003_frame_send(const pms7003_callback_sent_t handler, uart_port_t uart_num) 
+{
   if (!handler) {
     return PMS7003_RESULT_ERROR;
   }
@@ -18,7 +19,9 @@ pms7003_result_t pms7003_frame_send(const pms7003_callback_sent_t handler, uart_
   return PMS7003_RESULT_SUCCESS;
 }
 
-pms7003_result_t pms7003_frame_receive(const pms7003_callback_received_t handler, uart_port_t uart_num, pms7003_frame_answer_t *frame) {
+pms7003_result_t pms7003_frame_receive(const pms7003_callback_received_t handler, 
+                                       uart_port_t uart_num, pms7003_frame_answer_t *frame) 
+{
   if ((!handler) || (!frame)) {
     return PMS7003_RESULT_ERROR;
   }
@@ -43,40 +46,49 @@ pms7003_result_t pms7003_frame_receive(const pms7003_callback_received_t handler
   }
 }
 
-int32_t pms7003_read_request(uart_port_t uart_num) {
+int32_t pms7003_read_request(uart_port_t uart_num) 
+{
   pms7003_frame_request_t frame = PMS7003_FRAME_READ;
   return uart_write_bytes(uart_num, frame.buffer_request, PMS7003_FRAME_REQUEST_SIZE);
 }
 
-int32_t pms7003_change_mode_passive(uart_port_t uart_num) {
+int32_t pms7003_change_mode_passive(uart_port_t uart_num) 
+{
   pms7003_frame_request_t frame = PMS7003_FRAME_CHANGE_MODE_PASSIVE;
   return uart_write_bytes(uart_num, frame.buffer_request, PMS7003_FRAME_REQUEST_SIZE);
 }
 
-int32_t pms7003_change_mode_active(uart_port_t uart_num) {
+int32_t pms7003_change_mode_active(uart_port_t uart_num) 
+{
   pms7003_frame_request_t frame = PMS7003_FRAME_CHANGE_MODE_ACTIVE;
   return uart_write_bytes(uart_num, frame.buffer_request, PMS7003_FRAME_REQUEST_SIZE);
 }
 
-int32_t pms7003_sleep(uart_port_t uart_num) {
+int32_t pms7003_sleep(uart_port_t uart_num) 
+{
   pms7003_frame_request_t frame = PMS7003_FRAME_SLEEP;
   return uart_write_bytes(uart_num, frame.buffer_request, PMS7003_FRAME_REQUEST_SIZE);
 }
 
-int32_t pms7003_wakeup(uart_port_t uart_num) {
+int32_t pms7003_wakeup(uart_port_t uart_num) 
+{
   pms7003_frame_request_t frame = PMS7003_FRAME_WAKEUP;
   return uart_write_bytes(uart_num, frame.buffer_request, PMS7003_FRAME_REQUEST_SIZE);
 }
 
-int32_t pms7003_read(uart_port_t uart_num, pms7003_frame_answer_t *frame) {
+int32_t pms7003_read(uart_port_t uart_num, pms7003_frame_answer_t *frame) 
+{
   int32_t length = 0;
 
   while (1) {
-    length = uart_read_bytes(uart_num, frame->buffer_answer, 2 * PMS7003_FRAME_BYTE_SIZE, PMS7003_UART_WAIT_TIMEOUT_MS);
+    length = uart_read_bytes(uart_num, frame->buffer_answer, 2 * PMS7003_FRAME_BYTE_SIZE, 
+                             PMS7003_UART_WAIT_TIMEOUT_MS);
 
     if (length == 2) {
-      if ((frame->buffer_answer[0] == PMS7003_START_CHARACTER_1) && (frame->buffer_answer[1] == PMS7003_START_CHARACTER_2)) {
-        return uart_read_bytes(uart_num, frame->buffer_answer + length, PMS7003_FRAME_ANSWER_SIZE - length, PMS7003_UART_WAIT_TIMEOUT_MS) + length;
+      if ((frame->buffer_answer[0] == PMS7003_START_CHARACTER_1) && 
+          (frame->buffer_answer[1] == PMS7003_START_CHARACTER_2)) {
+        return uart_read_bytes(uart_num, frame->buffer_answer + length, 
+                               PMS7003_FRAME_ANSWER_SIZE - length, PMS7003_UART_WAIT_TIMEOUT_MS) + length;
       }
     }
 

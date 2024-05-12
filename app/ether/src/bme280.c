@@ -5,7 +5,8 @@
 const bme280_settings_t bme280_default_settings = BME280_DEFAULT_SETTINGS;
 static int32_t t_fine;
 
-bme280_result_t bme280_init(i2c_port_t i2c_num, const bme280_settings_t *settings) {
+bme280_result_t bme280_init(i2c_port_t i2c_num, const bme280_settings_t *settings) 
+{
   if (!settings) {
     return BME280_RESULT_ERROR;
   }
@@ -13,19 +14,28 @@ bme280_result_t bme280_init(i2c_port_t i2c_num, const bme280_settings_t *setting
   i2c_controller_result_t result;
 
   /* CTRL_HUM Register settings. */
-  result = i2c_controller_send(i2c_num, BME280_I2C_ADDRESS, BME280_REGISTER_CTRL_HUM, &settings->ctrl_hum, sizeof(settings->ctrl_hum));
+  result = i2c_controller_send(i2c_num, BME280_I2C_ADDRESS, 
+                               BME280_REGISTER_CTRL_HUM, &settings->ctrl_hum, 
+                               sizeof(settings->ctrl_hum));
+
   if (result != I2C_CONTROLLER_RESULT_SUCCESS) {
     return BME280_RESULT_ERROR;
   }
 
   /* CTRL_MEAS Register settings. */
-  result = i2c_controller_send(i2c_num, BME280_I2C_ADDRESS, BME280_REGISTER_CTRL_MEAS, &settings->ctrl_meas, sizeof(settings->ctrl_meas));
+  result = i2c_controller_send(i2c_num, BME280_I2C_ADDRESS, 
+                               BME280_REGISTER_CTRL_MEAS, &settings->ctrl_meas, 
+                               sizeof(settings->ctrl_meas));
+
   if (result != I2C_CONTROLLER_RESULT_SUCCESS) {
     return BME280_RESULT_ERROR;
   }
 
   /* CONFIG Register settings. */
-  result = i2c_controller_send(i2c_num, BME280_I2C_ADDRESS, BME280_REGISTER_CONFIG, &settings->config, sizeof(settings->config));
+  result = i2c_controller_send(i2c_num, BME280_I2C_ADDRESS, 
+                               BME280_REGISTER_CONFIG, &settings->config, 
+                               sizeof(settings->config));
+
   if (result != I2C_CONTROLLER_RESULT_SUCCESS) {
     return BME280_RESULT_ERROR;
   }
@@ -33,11 +43,15 @@ bme280_result_t bme280_init(i2c_port_t i2c_num, const bme280_settings_t *setting
   return BME280_RESULT_SUCCESS;
 }
 
-bme280_result_t bme280_reset(i2c_port_t i2c_num) {
+bme280_result_t bme280_reset(i2c_port_t i2c_num) 
+{
   i2c_controller_result_t result;
   uint8_t data = BME280_DATA_RESET;
 
-  result = i2c_controller_send(i2c_num, BME280_I2C_ADDRESS, BME280_REGISTER_RESET, &data, sizeof(data));
+  result = i2c_controller_send(i2c_num, BME280_I2C_ADDRESS, 
+                               BME280_REGISTER_RESET, &data, 
+                               sizeof(data));
+
   if (result != I2C_CONTROLLER_RESULT_SUCCESS) {
     return BME280_RESULT_ERROR;
   }
@@ -45,14 +59,18 @@ bme280_result_t bme280_reset(i2c_port_t i2c_num) {
   return BME280_RESULT_SUCCESS;
 }
 
-bme280_result_t bme280_id(i2c_port_t i2c_num, uint8_t *data, size_t data_len) {
-  if ((!data) || (data_len == 0)){
+bme280_result_t bme280_id(i2c_port_t i2c_num, uint8_t *data, size_t data_len) 
+{
+  if ((!data) || (data_len == 0)) {
     return BME280_RESULT_ERROR; 
   }
   
   i2c_controller_result_t result;
 
-  result = i2c_controller_receive(i2c_num, BME280_I2C_ADDRESS, BME280_REGISTER_ID, data, data_len);
+  result = i2c_controller_receive(i2c_num, BME280_I2C_ADDRESS, 
+                                  BME280_REGISTER_ID, data, 
+                                  data_len);
+
   if (result != I2C_CONTROLLER_RESULT_SUCCESS) {
     return BME280_RESULT_ERROR;
   }
@@ -60,14 +78,18 @@ bme280_result_t bme280_id(i2c_port_t i2c_num, uint8_t *data, size_t data_len) {
   return BME280_RESULT_SUCCESS;
 }
 
-bme280_result_t bme280_force_mode(i2c_port_t i2c_num, const bme280_settings_t *settings) {
+bme280_result_t bme280_force_mode(i2c_port_t i2c_num, const bme280_settings_t *settings) 
+{
   if (!settings) {
     return BME280_RESULT_ERROR;
   }
 
   i2c_controller_result_t result;
 
-  result = i2c_controller_send(i2c_num, BME280_I2C_ADDRESS, BME280_REGISTER_CTRL_MEAS, &settings->ctrl_meas, sizeof(settings->ctrl_meas));
+  result = i2c_controller_send(i2c_num, BME280_I2C_ADDRESS, 
+                               BME280_REGISTER_CTRL_MEAS, &settings->ctrl_meas, 
+                               sizeof(settings->ctrl_meas));
+
   if (result != I2C_CONTROLLER_RESULT_SUCCESS) {
     return BME280_RESULT_ERROR;
   }
@@ -75,7 +97,8 @@ bme280_result_t bme280_force_mode(i2c_port_t i2c_num, const bme280_settings_t *s
   return BME280_RESULT_SUCCESS;
 }
 
-bme280_result_t bme280_measure_humidity(i2c_port_t i2c_num, bme280_humidity_t *humidity) {
+bme280_result_t bme280_measure_humidity(i2c_port_t i2c_num, bme280_humidity_t *humidity) 
+{
   if (!humidity) {
     return BME280_RESULT_ERROR;
   }
@@ -83,7 +106,10 @@ bme280_result_t bme280_measure_humidity(i2c_port_t i2c_num, bme280_humidity_t *h
   i2c_controller_result_t result;
   uint8_t data[BME280_SIZE_HUM];
 
-  result = i2c_controller_receive(i2c_num, BME280_I2C_ADDRESS, BME280_REGISTER_HUM_MSB, data, sizeof(data));
+  result = i2c_controller_receive(i2c_num, BME280_I2C_ADDRESS, 
+                                  BME280_REGISTER_HUM_MSB, data, 
+                                  sizeof(data));
+
   if (result != I2C_CONTROLLER_RESULT_SUCCESS) {
     return BME280_RESULT_ERROR;
   }
@@ -94,7 +120,9 @@ bme280_result_t bme280_measure_humidity(i2c_port_t i2c_num, bme280_humidity_t *h
   return BME280_RESULT_SUCCESS;
 }
 
-bme280_result_t bme280_measure_temperature(i2c_port_t i2c_num, bme280_temperature_t *temperature) {
+bme280_result_t bme280_measure_temperature(i2c_port_t i2c_num, 
+                                           bme280_temperature_t *temperature) 
+{
   if (!temperature) {
     return BME280_RESULT_ERROR;
   }
@@ -102,7 +130,10 @@ bme280_result_t bme280_measure_temperature(i2c_port_t i2c_num, bme280_temperatur
   i2c_controller_result_t result;
   uint8_t data[BME280_SIZE_TEMP];
 
-  result = i2c_controller_receive(i2c_num, BME280_I2C_ADDRESS, BME280_REGISTER_TEMP_MSB, data, sizeof(data));
+  result = i2c_controller_receive(i2c_num, BME280_I2C_ADDRESS, 
+                                  BME280_REGISTER_TEMP_MSB, data, 
+                                  sizeof(data));
+
   if (result != I2C_CONTROLLER_RESULT_SUCCESS) {
     return BME280_RESULT_ERROR;
   }
@@ -114,7 +145,8 @@ bme280_result_t bme280_measure_temperature(i2c_port_t i2c_num, bme280_temperatur
   return BME280_RESULT_SUCCESS;
 }
 
-bme280_result_t bme280_measure_pressure(i2c_port_t i2c_num, bme280_pressure_t *pressure) {
+bme280_result_t bme280_measure_pressure(i2c_port_t i2c_num, bme280_pressure_t *pressure) 
+{
   if (!pressure) {
     return BME280_RESULT_ERROR;
   }
@@ -122,7 +154,10 @@ bme280_result_t bme280_measure_pressure(i2c_port_t i2c_num, bme280_pressure_t *p
   i2c_controller_result_t result;
   uint8_t data[BME280_SIZE_PRESS];
 
-  result = i2c_controller_receive(i2c_num, BME280_I2C_ADDRESS, BME280_REGISTER_PRESS_MSB, data, sizeof(data));
+  result = i2c_controller_receive(i2c_num, BME280_I2C_ADDRESS, 
+                                  BME280_REGISTER_PRESS_MSB, data, 
+                                  sizeof(data));
+
   if (result != I2C_CONTROLLER_RESULT_SUCCESS) {
     return BME280_RESULT_ERROR;
   }
@@ -134,7 +169,9 @@ bme280_result_t bme280_measure_pressure(i2c_port_t i2c_num, bme280_pressure_t *p
   return BME280_RESULT_SUCCESS;
 }
 
-bme280_result_t bme280_get_compensation_data(i2c_port_t i2c_num, bme280_compensator_t *compensator) {
+bme280_result_t bme280_get_compensation_data(i2c_port_t i2c_num, 
+                                             bme280_compensator_t *compensator) 
+{
   if (!compensator) {
     return BME280_RESULT_ERROR;
   }
@@ -145,17 +182,26 @@ bme280_result_t bme280_get_compensation_data(i2c_port_t i2c_num, bme280_compensa
   uint8_t second_part = 1;
   uint8_t third_part = 7;
 
-  result = i2c_controller_receive(i2c_num, BME280_I2C_ADDRESS, BME280_REGISTER_CALIB00, data, first_part);
+  result = i2c_controller_receive(i2c_num, BME280_I2C_ADDRESS, 
+                                  BME280_REGISTER_CALIB00, data, 
+                                  first_part);
+
   if (result != I2C_CONTROLLER_RESULT_SUCCESS) {
     return BME280_RESULT_ERROR;
   }
 
-  result = i2c_controller_receive(i2c_num, BME280_I2C_ADDRESS, BME280_REGISTER_CALIB25, (data + first_part), second_part);
+  result = i2c_controller_receive(i2c_num, BME280_I2C_ADDRESS, 
+                                  BME280_REGISTER_CALIB25, (data + first_part), 
+                                  second_part);
+  
   if (result != I2C_CONTROLLER_RESULT_SUCCESS) {
     return BME280_RESULT_ERROR;
   }
 
-  result = i2c_controller_receive(i2c_num, BME280_I2C_ADDRESS, BME280_REGISTER_CALIB26, (data + first_part + second_part), third_part);
+  result = i2c_controller_receive(i2c_num, BME280_I2C_ADDRESS, 
+                                  BME280_REGISTER_CALIB26, (data + first_part + second_part), 
+                                  third_part);
+
   if (result != I2C_CONTROLLER_RESULT_SUCCESS) {
     return BME280_RESULT_ERROR;
   }
@@ -183,7 +229,9 @@ bme280_result_t bme280_get_compensation_data(i2c_port_t i2c_num, bme280_compensa
   return BME280_RESULT_SUCCESS;
 }
 
-bme280_result_t bme280_compensate_humidity(bme280_compensator_t *compensator, bme280_humidity_t *humidity) {
+bme280_result_t bme280_compensate_humidity(bme280_compensator_t *compensator, 
+                                           bme280_humidity_t *humidity) 
+{
   if ((!compensator) || (!humidity)) {
     return BME280_RESULT_ERROR;
   }
@@ -199,7 +247,8 @@ bme280_result_t bme280_compensate_humidity(bme280_compensator_t *compensator, bm
 
   if (var_h > 100.0) {
     var_h = 100.0;
-  } else if (var_h < 0.0) {
+  } 
+  else if (var_h < 0.0) {
     var_h = 0.0;
   }
 
@@ -208,7 +257,8 @@ bme280_result_t bme280_compensate_humidity(bme280_compensator_t *compensator, bm
   return BME280_RESULT_SUCCESS;
 }
 
-bme280_result_t bme280_compensate_temperature(bme280_compensator_t *compensator, bme280_temperature_t *temperature) {
+bme280_result_t bme280_compensate_temperature(bme280_compensator_t *compensator, 
+                                              bme280_temperature_t *temperature) {
   if ((!compensator) || (!temperature)) {
     return BME280_RESULT_ERROR;
   }
@@ -226,7 +276,8 @@ bme280_result_t bme280_compensate_temperature(bme280_compensator_t *compensator,
   return BME280_RESULT_SUCCESS;
 }
 
-bme280_result_t bme280_compensate_pressure(bme280_compensator_t *compensator, bme280_pressure_t *pressure) {
+bme280_result_t bme280_compensate_pressure(bme280_compensator_t *compensator, 
+                                           bme280_pressure_t *pressure) {
   if ((!compensator) || (!pressure)) {
     return BME280_RESULT_ERROR;
   }

@@ -2,7 +2,8 @@
 
 const mqtt_controller_descriptor_t mqtt_controller_descriptor_default = MQTT_CONTROLLER_DESCRIPTOR_DEFAULT;
 
-static void mqtt_controller_log_error_if_nonzero(const char *message, int error_code) {
+static void mqtt_controller_log_error_if_nonzero(const char *message, int error_code) 
+{
   const char *TAG = "MQTT_CONTROLLER_EVENT_HANDLER";
 
   if (error_code != 0) {
@@ -10,7 +11,9 @@ static void mqtt_controller_log_error_if_nonzero(const char *message, int error_
   }
 }
 
-void mqtt_controller_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data) {
+void mqtt_controller_event_handler(void *handler_args, esp_event_base_t base, 
+                                   int32_t event_id, void *event_data) 
+{
   const char *TAG = "MQTT_CONTROLLER_EVENT_HANDLER";
   ESP_LOGD(TAG, "Event dispatched from event loop base=%s, event_id=%" PRIi32 "", base, event_id);
 
@@ -68,7 +71,8 @@ void mqtt_controller_event_handler(void *handler_args, esp_event_base_t base, in
   }
 }
 
-mqtt_controller_result_t mqtt_controller_init(const mqtt_controller_descriptor_t *mqtt_controller_descriptor) {
+mqtt_controller_result_t mqtt_controller_init(const mqtt_controller_descriptor_t *mqtt_controller_descriptor) 
+{
   if (!mqtt_controller_descriptor) {
     return MQTT_CONTROLLER_RESULT_ERROR;
   }

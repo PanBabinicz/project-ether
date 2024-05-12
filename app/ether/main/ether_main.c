@@ -16,7 +16,8 @@
 #include "wifi_controller.h"
 #include "mqtt_controller.h"
 
-SemaphoreHandle_t wake_up_semaphore, sleep_semaphore, rx_semaphore, tx_semaphore, print_semaphore, bme280_semaphore;
+SemaphoreHandle_t wake_up_semaphore, sleep_semaphore, rx_semaphore, tx_semaphore, 
+                  print_semaphore, bme280_semaphore;
 
 const TickType_t delay_60s = pdMS_TO_TICKS(60000);
 const TickType_t delay_10s = pdMS_TO_TICKS(10000);
@@ -24,7 +25,8 @@ const TickType_t delay_1s = pdMS_TO_TICKS(1000);
 const TickType_t delay_500ms = pdMS_TO_TICKS(500);
 const TickType_t delay_200ms = pdMS_TO_TICKS(200);
 
-void init(void) {
+void init(void) 
+{
   wifi_controller_init(&wifi_controller_descriptor_default);
   vTaskDelay(delay_1s);
   uart_controller_init(&uart_controller_descriptor_default);
@@ -35,14 +37,17 @@ void init(void) {
   vTaskDelay(delay_1s);
 }
 
-static uint16_t convert_to_little_endian(uint16_t data) {
+static uint16_t convert_to_little_endian(uint16_t data) 
+{
   return ((data & 0x00ff) << 8 | (data & 0xff00) >> 8);
 }
 
-static void tx_task(void *arg) {
+static void tx_task(void *arg) 
+{
 
   static const char *TX_TASK_TAG = "TX_TASK";
   esp_log_level_set(TX_TASK_TAG, ESP_LOG_INFO);
+
   while (1) {
     xSemaphoreTake(tx_semaphore, portMAX_DELAY);
 
@@ -58,7 +63,8 @@ static void tx_task(void *arg) {
   }
 }
 
-static void rx_task(void *arg) {
+static void rx_task(void *arg) 
+{
   if (!arg) {
     ESP_LOGE("RX_TASK", "Received null pointer argument");
     vTaskDelete(xTaskGetCurrentTaskHandle());
@@ -81,7 +87,8 @@ static void rx_task(void *arg) {
   }
 }
 
-static void print_measurements_task(void *arg) {
+static void print_measurements_task(void *arg) 
+{
   if (!arg) {
     ESP_LOGE("PRINT_MEASUREMENTS_TASK", "Received null pointer argument");
     vTaskDelete(xTaskGetCurrentTaskHandle());
@@ -97,11 +104,17 @@ static void print_measurements_task(void *arg) {
     xSemaphoreTake(print_semaphore, portMAX_DELAY);
 
     ESP_LOGI(PRINT_MEASUREMENTS_TASK_TAG, "MEASUREMENTS:");
-    ESP_LOGI(PRINT_MEASUREMENTS_TASK_TAG, "PM1_STANDARD = %d", convert_to_little_endian(frame->data_pm1_standard));
-    ESP_LOGI(PRINT_MEASUREMENTS_TASK_TAG, "PM25_STANDARD = %d", convert_to_little_endian(frame->data_pm25_standard));
-    ESP_LOGI(PRINT_MEASUREMENTS_TASK_TAG, "PM10_STANDARD = %d", convert_to_little_endian(frame->data_pm10_standard));
+    ESP_LOGI(PRINT_MEASUREMENTS_TASK_TAG, "PM1_STANDARD = %d", 
+             convert_to_little_endian(frame->data_pm1_standard));
 
-    ESP_LOG_BUFFER_HEXDUMP(PRINT_MEASUREMENTS_TASK_TAG, frame->buffer_answer, PMS7003_FRAME_ANSWER_SIZE, ESP_LOG_INFO);
+    ESP_LOGI(PRINT_MEASUREMENTS_TASK_TAG, "PM25_STANDARD = %d", 
+             convert_to_little_endian(frame->data_pm25_standard));
+
+    ESP_LOGI(PRINT_MEASUREMENTS_TASK_TAG, "PM10_STANDARD = %d", 
+             convert_to_little_endian(frame->data_pm10_standard));
+
+    ESP_LOG_BUFFER_HEXDUMP(PRINT_MEASUREMENTS_TASK_TAG, frame->buffer_answer, 
+                           PMS7003_FRAME_ANSWER_SIZE, ESP_LOG_INFO);
 
     // vTaskDelay(delay_60s);
     vTaskDelay(delay_500ms);
@@ -109,7 +122,8 @@ static void print_measurements_task(void *arg) {
   }
 }
 
-static void sleep_task(void *arg) {
+static void sleep_task(void *arg) 
+{
   static const char *SLEEP_TASK_TAG = "SLEEP_TASK";
   esp_log_level_set(SLEEP_TASK_TAG, ESP_LOG_INFO);
 
@@ -124,7 +138,8 @@ static void sleep_task(void *arg) {
   }
 }
 
-static void wake_up_task(void *arg) {
+static void wake_up_task(void *arg) 
+{
   static const char *WAKE_UP_TASK_TAG = "WAKE_UP_TASK";
   esp_log_level_set(WAKE_UP_TASK_TAG, ESP_LOG_INFO);
 
@@ -139,7 +154,8 @@ static void wake_up_task(void *arg) {
   }
 }
 
-static void bme280_task(void *arg) {
+static void bme280_task(void *arg) 
+{
   if (!arg) {
     ESP_LOGE("BME280_TASK", "Received null pointer argument");
     vTaskDelete(xTaskGetCurrentTaskHandle());
@@ -149,7 +165,7 @@ static void bme280_task(void *arg) {
   static const char *BME280_TASK_TAG = "BME280_TASK";
   esp_log_level_set(BME280_TASK_TAG, ESP_LOG_INFO);
 
-  bme280_measurements_t *bme280_measurements = (bme280_measurements_t*)arg;
+  bme280_measurements_t *bme280_measurements = arg;
 
   uint8_t data = 0;
   
@@ -162,25 +178,42 @@ static void bme280_task(void *arg) {
     vTaskDelete(xTaskGetCurrentTaskHandle());
   }
 
-  bme280_get_compensation_data(i2c_controller_descriptor_default.i2c_num, &bme280_measurements->compensator);
+  bme280_get_compensation_data(i2c_controller_descriptor_default.i2c_num, 
+                               &bme280_measurements->compensator);
 
   while (1) {
     xSemaphoreTake(bme280_semaphore, portMAX_DELAY);
 
     bme280_force_mode(i2c_controller_descriptor_default.i2c_num, &bme280_default_settings);
+
     vTaskDelay(delay_500ms);
 
-    bme280_measure_humidity(i2c_controller_descriptor_default.i2c_num, &bme280_measurements->humidity);
-    bme280_measure_pressure(i2c_controller_descriptor_default.i2c_num, &bme280_measurements->pressure);
-    bme280_measure_temperature(i2c_controller_descriptor_default.i2c_num, &bme280_measurements->temperature);
+    bme280_measure_humidity(i2c_controller_descriptor_default.i2c_num, 
+                            &bme280_measurements->humidity);
 
-    bme280_compensate_humidity(&bme280_measurements->compensator, &bme280_measurements->humidity);
-    bme280_compensate_pressure(&bme280_measurements->compensator, &bme280_measurements->pressure);
-    bme280_compensate_temperature(&bme280_measurements->compensator, &bme280_measurements->temperature);
+    bme280_measure_pressure(i2c_controller_descriptor_default.i2c_num, 
+                            &bme280_measurements->pressure);
+
+    bme280_measure_temperature(i2c_controller_descriptor_default.i2c_num, 
+                               &bme280_measurements->temperature);
+
+    bme280_compensate_humidity(&bme280_measurements->compensator, 
+                               &bme280_measurements->humidity);
+
+    bme280_compensate_pressure(&bme280_measurements->compensator, 
+                               &bme280_measurements->pressure);
+
+    bme280_compensate_temperature(&bme280_measurements->compensator, 
+                                  &bme280_measurements->temperature);
     
-    ESP_LOGI(BME280_TASK_TAG, "humidity = %f\n\r", bme280_measurements->humidity.compensated);
-    ESP_LOGI(BME280_TASK_TAG, "pressure = %f\n\r", bme280_measurements->pressure.compensated);
-    ESP_LOGI(BME280_TASK_TAG, "temperature = %f\n\r", bme280_measurements->temperature.compensated);
+    ESP_LOGI(BME280_TASK_TAG, "humidity = %f\n\r", 
+             bme280_measurements->humidity.compensated);
+
+    ESP_LOGI(BME280_TASK_TAG, "pressure = %f\n\r", 
+             bme280_measurements->pressure.compensated);
+
+    ESP_LOGI(BME280_TASK_TAG, "temperature = %f\n\r", 
+             bme280_measurements->temperature.compensated);
 
     vTaskDelay(delay_60s);
 
@@ -188,20 +221,22 @@ static void bme280_task(void *arg) {
   }
 }
 
-void app_main(void) {
+void app_main(void) 
+{
   pms7003_frame_answer_t pms7003_frame = { 0 };
   bme280_measurements_t bme280_measurements = { 0 };
 
   esp_err_t ret = nvs_flash_init();
-  if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND)
-  {
+  if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
     ESP_ERROR_CHECK(nvs_flash_erase());
     ret = nvs_flash_init();
   }
   ESP_ERROR_CHECK(ret);
+
   init();
 
-  pms7003_frame_send(pms7003_change_mode_passive, uart_controller_descriptor_default.uart_port);
+  pms7003_frame_send(pms7003_change_mode_passive, 
+                     uart_controller_descriptor_default.uart_port);
 
   sleep_semaphore = xSemaphoreCreateBinary();
   wake_up_semaphore = xSemaphoreCreateBinary();

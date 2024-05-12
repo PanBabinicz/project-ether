@@ -3,7 +3,8 @@
 const i2c_controller_descriptor_t i2c_controller_descriptor_default = I2C_CONTROLLER_DESCRIPTOR_DEFAULT;
 static const TickType_t ticks = pdMS_TO_TICKS(10000);
 
-i2c_controller_result_t i2c_controller_init(const i2c_controller_descriptor_t *descriptor) {
+i2c_controller_result_t i2c_controller_init(const i2c_controller_descriptor_t *descriptor) 
+{
   if (!descriptor) {
     return I2C_CONTROLLER_RESULT_ERROR;
   }
@@ -17,7 +18,9 @@ i2c_controller_result_t i2c_controller_init(const i2c_controller_descriptor_t *d
     return I2C_CONTROLLER_RESULT_ERROR;
   }
 
-  result = i2c_driver_install(descriptor->i2c_num, descriptor->config.mode, I2C_CONTROLLER_MASTER_RX_BUF_DISABLE, I2C_CONTROLLER_MASTER_TX_BUF_DISABLE, 0);
+  result = i2c_driver_install(descriptor->i2c_num, descriptor->config.mode, 
+                              I2C_CONTROLLER_MASTER_RX_BUF_DISABLE, 
+                              I2C_CONTROLLER_MASTER_TX_BUF_DISABLE, 0);
   if (result != ESP_OK) {
     ESP_LOGI(I2C_CONTROLLER_CONFIG_TAG, "i2c_driver_install result = 0x%x", result); 
     return I2C_CONTROLLER_RESULT_ERROR;
@@ -27,7 +30,10 @@ i2c_controller_result_t i2c_controller_init(const i2c_controller_descriptor_t *d
   return I2C_CONTROLLER_RESULT_SUCCESS;
 }
 
-i2c_controller_result_t i2c_controller_send(i2c_port_t i2c_num, uint8_t address, uint8_t reg, const uint8_t *data, size_t data_len) {
+i2c_controller_result_t i2c_controller_send(i2c_port_t i2c_num, uint8_t address, 
+                                            uint8_t reg, const uint8_t *data, 
+                                            size_t data_len) 
+{
   esp_err_t result;
   static const char *I2C_CONTROLLER_SEND_TAG = "I2C_CONTROLLER_SEND";
 
@@ -78,7 +84,10 @@ i2c_controller_result_t i2c_controller_send(i2c_port_t i2c_num, uint8_t address,
   return I2C_CONTROLLER_RESULT_SUCCESS;
 }
 
-i2c_controller_result_t i2c_controller_receive(i2c_port_t i2c_num, uint8_t address, uint8_t reg, uint8_t *data, size_t data_len) {
+i2c_controller_result_t i2c_controller_receive(i2c_port_t i2c_num, uint8_t address, 
+                                               uint8_t reg, uint8_t *data, 
+                                               size_t data_len) 
+{
   esp_err_t result;
   static const char *I2C_CONTROLLER_RECEIVE_TAG = "I2C_CONTROLLER_RECEIVE";
 

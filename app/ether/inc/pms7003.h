@@ -17,6 +17,10 @@
 
 #define PMS7003_UART_WAIT_TIMEOUT_MS  (0x64)
 
+/** 
+ * \ param
+ * \ param
+ */
 typedef union {
   struct {
     const uint8_t start_byte_1;
@@ -31,6 +35,10 @@ typedef union {
   uint8_t buffer_request[PMS7003_FRAME_REQUEST_SIZE];
 } pms7003_frame_request_t;
 
+/** 
+ * \ param
+ * \ param
+ */
 typedef union {
   struct {
     uint8_t start_byte_1;
@@ -54,6 +62,10 @@ typedef union {
   uint8_t buffer_answer[PMS7003_FRAME_ANSWER_SIZE];
 } pms7003_frame_answer_t;
 
+/** 
+ * \ param
+ * \ param
+ */
 typedef enum {
   PMS7003_RESULT_SUCCESS = 0,
   PMS7003_RESULT_ERROR,
@@ -62,11 +74,19 @@ typedef enum {
   PMS7003_RESULT_WRONG_CHECK_CODE,
 } pms7003_result_t;
 
+/** 
+ * \ param
+ * \ param
+ */
 typedef enum {
   PMS7003_STATUS_OK = 0,
   PMS7003_STATUS_READY,
 } pms7003_status_t;
 
+/** 
+ * \ param
+ * \ param
+ */
 #define PMS7003_FRAME_READ { \
   .start_byte_1 = PMS7003_START_CHARACTER_1, \
   .start_byte_2 = PMS7003_START_CHARACTER_2, \
@@ -77,6 +97,10 @@ typedef enum {
   .lrcl = 0x71 \
 } 
 
+/** 
+ * \ param
+ * \ param
+ */
 #define PMS7003_FRAME_CHANGE_MODE_PASSIVE { \
   .start_byte_1 = PMS7003_START_CHARACTER_1, \
   .start_byte_2 = PMS7003_START_CHARACTER_2, \
@@ -87,6 +111,10 @@ typedef enum {
   .lrcl = 0x70 \
 } 
 
+/** 
+ * \ param
+ * \ param
+ */
 #define PMS7003_FRAME_CHANGE_MODE_ACTIVE { \
   .start_byte_1 = PMS7003_START_CHARACTER_1, \
   .start_byte_2 = PMS7003_START_CHARACTER_2, \
@@ -97,6 +125,10 @@ typedef enum {
   .lrcl = 0x71 \
 } 
 
+/** 
+ * \ param
+ * \ param
+ */
 #define PMS7003_FRAME_SLEEP { \
   .start_byte_1 = PMS7003_START_CHARACTER_1, \
   .start_byte_2 = PMS7003_START_CHARACTER_2, \
@@ -107,6 +139,10 @@ typedef enum {
   .lrcl = 0x73 \
 } 
 
+/** 
+ * \ param
+ * \ param
+ */
 #define PMS7003_FRAME_WAKEUP { \
   .start_byte_1 = PMS7003_START_CHARACTER_1, \
   .start_byte_2 = PMS7003_START_CHARACTER_2, \
@@ -117,17 +153,65 @@ typedef enum {
   .lrcl = 0x74 \
 } 
 
+/** 
+ * \ param
+ * \ param
+ */
 typedef int32_t (*pms7003_callback_sent_t)(uart_port_t);
+
+/** 
+ * \ param
+ * \ param
+ */
 typedef int32_t (*pms7003_callback_received_t)(uart_port_t, pms7003_frame_answer_t *);
 
+/** 
+ * \ param
+ * \ param
+ */
 pms7003_result_t pms7003_frame_send(const pms7003_callback_sent_t handler, uart_port_t uart_num);
-pms7003_result_t pms7003_frame_receive(const pms7003_callback_received_t handler, uart_port_t uart_num, pms7003_frame_answer_t *frame);
 
+/** 
+ * \ param
+ * \ param
+ */
+pms7003_result_t pms7003_frame_receive(const pms7003_callback_received_t handler, 
+                                       uart_port_t uart_num, pms7003_frame_answer_t *frame);
+
+/** 
+ * \ param
+ * \ param
+ */
 int32_t pms7003_read_request(uart_port_t uart_num);
+
+/** 
+ * \ param
+ * \ param
+ */
 int32_t pms7003_change_mode_passive(uart_port_t uart_num);
+
+/** 
+ * \ param
+ * \ param
+ */
 int32_t pms7003_change_mode_active(uart_port_t uart_num);
+
+/** 
+ * \ param
+ * \ param
+ */
 int32_t pms7003_sleep(uart_port_t uart_num);
+
+/** 
+ * \ param
+ * \ param
+ */
 int32_t pms7003_wakeup(uart_port_t uart_num);
+
+/** 
+ * \ param
+ * \ param
+ */
 int32_t pms7003_read(uart_port_t uart_num, pms7003_frame_answer_t *frame);
 
 #endif // !INC_PMS7003_H
