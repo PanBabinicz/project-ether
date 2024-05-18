@@ -16,75 +16,30 @@
 #include "wifi_controller.h"
 #include "mqtt_controller.h"
 
-SemaphoreHandle_t wake_up_semaphore, sleep_semaphore, rx_semaphore, tx_semaphore, 
-                  print_semaphore, bme280_semaphore;
+SemaphoreHandle_t pms7003_semaphore, print_semaphore, bme280_semaphore;
 
-const TickType_t delay_60s = pdMS_TO_TICKS(60000);
-const TickType_t delay_10s = pdMS_TO_TICKS(10000);
-const TickType_t delay_1s = pdMS_TO_TICKS(1000);
-const TickType_t delay_500ms = pdMS_TO_TICKS(500);
-const TickType_t delay_200ms = pdMS_TO_TICKS(200);
+const TickType_t delay_60s    = pdMS_TO_TICKS(60000);
+const TickType_t delay_10s    = pdMS_TO_TICKS(10000);
+const TickType_t delay_1s     = pdMS_TO_TICKS(1000);
+const TickType_t delay_500ms  = pdMS_TO_TICKS(500);
+const TickType_t delay_200ms  = pdMS_TO_TICKS(200);
+const TickType_t delay_15ms   = pdMS_TO_TICKS(15);
 
-void init(void) 
+static void init(void) 
 {
-  wifi_controller_init(&wifi_controller_descriptor_default);
-  vTaskDelay(delay_1s);
+  // wifi_controller_init(&wifi_controller_descriptor_default);
+  // vTaskDelay(delay_1s);
   uart_controller_init(&uart_controller_descriptor_default);
   vTaskDelay(delay_1s);
   i2c_controller_init(&i2c_controller_descriptor_default);
   vTaskDelay(delay_1s);
-  mqtt_controller_init(&mqtt_controller_descriptor_default);
-  vTaskDelay(delay_1s);
+  // mqtt_controller_init(&mqtt_controller_descriptor_default);
+  // vTaskDelay(delay_1s);
 }
 
 static uint16_t convert_to_little_endian(uint16_t data) 
 {
   return ((data & 0x00ff) << 8 | (data & 0xff00) >> 8);
-}
-
-static void tx_task(void *arg) 
-{
-
-  static const char *TX_TASK_TAG = "TX_TASK";
-  esp_log_level_set(TX_TASK_TAG, ESP_LOG_INFO);
-
-  while (1) {
-    xSemaphoreTake(tx_semaphore, portMAX_DELAY);
-
-    vTaskDelay(5*delay_500ms);
-
-    for (int i = 0; i < 5; ++i) {
-      uart_flush(uart_controller_descriptor_default.uart_port);
-      pms7003_frame_send(pms7003_read_request, uart_controller_descriptor_default.uart_port);
-      vTaskDelay(delay_500ms);
-    }
-
-    xSemaphoreGive(rx_semaphore);
-  }
-}
-
-static void rx_task(void *arg) 
-{
-  if (!arg) {
-    ESP_LOGE("RX_TASK", "Received null pointer argument");
-    vTaskDelete(xTaskGetCurrentTaskHandle());
-    return;
-  }
-
-  pms7003_frame_answer_t *frame = (pms7003_frame_answer_t*)arg;
-
-  static const char *RX_TASK_TAG = "RX_TASK";
-  esp_log_level_set(RX_TASK_TAG, ESP_LOG_INFO);
-
-  while (1) {
-    xSemaphoreTake(rx_semaphore, portMAX_DELAY);
-
-    pms7003_frame_receive(pms7003_read, uart_controller_descriptor_default.uart_port, frame); 
-
-    vTaskDelay(delay_500ms);
-
-    xSemaphoreGive(sleep_semaphore);
-  }
 }
 
 static void print_measurements_task(void *arg) 
@@ -110,47 +65,14 @@ static void print_measurements_task(void *arg)
     ESP_LOGI(PRINT_MEASUREMENTS_TASK_TAG, "PM25_STANDARD = %d", 
              convert_to_little_endian(frame->data_pm25_standard));
 
-    ESP_LOGI(PRINT_MEASUREMENTS_TASK_TAG, "PM10_STANDARD = %d", 
+    ESP_LOGI(PRINT_MEASUREMENTS_TASK_TAG, "PM10_STANDARD = %d\n\r", 
              convert_to_little_endian(frame->data_pm10_standard));
 
     ESP_LOG_BUFFER_HEXDUMP(PRINT_MEASUREMENTS_TASK_TAG, frame->buffer_answer, 
                            PMS7003_FRAME_ANSWER_SIZE, ESP_LOG_INFO);
 
-    // vTaskDelay(delay_60s);
-    vTaskDelay(delay_500ms);
-    xSemaphoreGive(bme280_semaphore);
-  }
-}
-
-static void sleep_task(void *arg) 
-{
-  static const char *SLEEP_TASK_TAG = "SLEEP_TASK";
-  esp_log_level_set(SLEEP_TASK_TAG, ESP_LOG_INFO);
-
-  while (1) {
-    xSemaphoreTake(sleep_semaphore, portMAX_DELAY);
-    
-    pms7003_frame_send(pms7003_sleep, uart_controller_descriptor_default.uart_port);
-
-    vTaskDelay(delay_500ms);
-
-    xSemaphoreGive(print_semaphore);
-  }
-}
-
-static void wake_up_task(void *arg) 
-{
-  static const char *WAKE_UP_TASK_TAG = "WAKE_UP_TASK";
-  esp_log_level_set(WAKE_UP_TASK_TAG, ESP_LOG_INFO);
-
-  while (1) {
-    xSemaphoreTake(wake_up_semaphore, portMAX_DELAY);
-
-    pms7003_frame_send(pms7003_wakeup, uart_controller_descriptor_default.uart_port);
-
-    vTaskDelay(delay_500ms);
-
-    xSemaphoreGive(tx_semaphore);
+    vTaskDelay(delay_60s);
+    xSemaphoreGive(pms7003_semaphore);
   }
 }
 
@@ -186,7 +108,15 @@ static void bme280_task(void *arg)
 
     bme280_force_mode(i2c_controller_descriptor_default.i2c_num, &bme280_default_settings);
 
-    vTaskDelay(delay_500ms);
+    /* 
+     * time_measure[max_in_ms] = 1.25 + (2.3 * temp_oversampling) + 
+     *                           (2.3 * press_oversampling + 0.575) +
+     *                           (2.3 * hum_oversampling + 0.575)
+     *
+     * time_measure[max_in_ms] = 1.25 + 2.3 + (2.3 + 0.575) + (2.3 + 0.575)
+     * time_measure[max_in_ms] = 9.3ms
+     */
+    vTaskDelay(delay_15ms);
 
     bme280_measure_humidity(i2c_controller_descriptor_default.i2c_num, 
                             &bme280_measurements->humidity);
@@ -206,24 +136,70 @@ static void bme280_task(void *arg)
     bme280_compensate_temperature(&bme280_measurements->compensator, 
                                   &bme280_measurements->temperature);
     
-    ESP_LOGI(BME280_TASK_TAG, "humidity = %f\n\r", 
+    ESP_LOGI(BME280_TASK_TAG, "humidity = %f", 
              bme280_measurements->humidity.compensated);
 
-    ESP_LOGI(BME280_TASK_TAG, "pressure = %f\n\r", 
+    ESP_LOGI(BME280_TASK_TAG, "pressure = %f", 
              bme280_measurements->pressure.compensated);
 
     ESP_LOGI(BME280_TASK_TAG, "temperature = %f\n\r", 
              bme280_measurements->temperature.compensated);
 
-    vTaskDelay(delay_60s);
+    vTaskDelay(delay_500ms);
 
-    xSemaphoreGive(wake_up_semaphore);
+    xSemaphoreGive(print_semaphore);
+  }
+}
+
+static void pms7003_task(void *arg)
+{
+  static const char *PMS7003_TASK_TAG = "PMS7003_TASK";
+  esp_log_level_set(PMS7003_TASK_TAG, ESP_LOG_INFO);
+
+  if (!arg) {
+    ESP_LOGE(PMS7003_TASK_TAG, "Received null pointer argument");
+    vTaskDelete(xTaskGetCurrentTaskHandle());
+    return;
+  }
+
+  pms7003_frame_answer_t *pms7003_frame_answer = (pms7003_frame_answer_t*)arg;
+
+  pms7003_frame_send(pms7003_change_mode_passive, 
+                     uart_controller_descriptor_default.uart_port);
+
+  vTaskDelay(delay_500ms);
+
+  while (1) {
+    xSemaphoreTake(pms7003_semaphore, portMAX_DELAY);
+    
+    pms7003_frame_send(pms7003_wakeup, uart_controller_descriptor_default.uart_port);
+
+    /* Wait at least 30s to get stable data. */
+    vTaskDelay(delay_60s/2);
+
+    for (uint8_t i = 0; i < 5; i++) {
+      /* Avoid getting not stable data. */
+      uart_flush(uart_controller_descriptor_default.uart_port);
+      pms7003_frame_send(pms7003_read_request, uart_controller_descriptor_default.uart_port);
+      vTaskDelay(delay_500ms);
+    }
+    
+    pms7003_frame_receive(pms7003_read, 
+                          uart_controller_descriptor_default.uart_port, pms7003_frame_answer);
+
+    vTaskDelay(delay_500ms);
+
+    pms7003_frame_send(pms7003_sleep, uart_controller_descriptor_default.uart_port);
+
+    vTaskDelay(delay_500ms);
+
+    xSemaphoreGive(bme280_semaphore);
   }
 }
 
 void app_main(void) 
 {
-  pms7003_frame_answer_t pms7003_frame = { 0 };
+  pms7003_frame_answer_t pms7003_answer_frame = { 0 };
   bme280_measurements_t bme280_measurements = { 0 };
 
   esp_err_t ret = nvs_flash_init();
@@ -235,23 +211,13 @@ void app_main(void)
 
   init();
 
-  pms7003_frame_send(pms7003_change_mode_passive, 
-                     uart_controller_descriptor_default.uart_port);
+  pms7003_semaphore = xSemaphoreCreateBinary();
+  print_semaphore   = xSemaphoreCreateBinary();
+  bme280_semaphore  = xSemaphoreCreateBinary();
 
-  sleep_semaphore = xSemaphoreCreateBinary();
-  wake_up_semaphore = xSemaphoreCreateBinary();
-  rx_semaphore = xSemaphoreCreateBinary();
-  tx_semaphore = xSemaphoreCreateBinary();
-  print_semaphore = xSemaphoreCreateBinary();
-  bme280_semaphore = xSemaphoreCreateBinary();
+  xSemaphoreGive(pms7003_semaphore);
 
-  xSemaphoreGive(wake_up_semaphore);
-  // xSemaphoreGive(bme280_semaphore);
-
-  xTaskCreate(wake_up_task, "wake_up_task", 1024 * 2, NULL, configMAX_PRIORITIES - 1, NULL);
-  xTaskCreate(sleep_task, "sleep_task", 1024 * 2, NULL, configMAX_PRIORITIES - 1, NULL);
-  xTaskCreate(rx_task, "uart_rx_task", 1024 * 2, &pms7003_frame, configMAX_PRIORITIES - 1, NULL);
-  xTaskCreate(tx_task, "uart_tx_task", 1024 * 2, NULL, configMAX_PRIORITIES - 1, NULL);
-  xTaskCreate(print_measurements_task, "print_measurements_task", 1024 * 2, &pms7003_frame, configMAX_PRIORITIES - 1, NULL);
+  xTaskCreate(pms7003_task, "pms7003_task", 1024 * 2, &pms7003_answer_frame, configMAX_PRIORITIES - 1, NULL);
+  xTaskCreate(print_measurements_task, "print_measurements_task", 1024 * 2, &pms7003_answer_frame, configMAX_PRIORITIES - 1, NULL);
   xTaskCreate(bme280_task, "bme280_task", 1024 * 2, &bme280_measurements, configMAX_PRIORITIES - 1, NULL);
 }
