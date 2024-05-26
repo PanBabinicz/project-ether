@@ -15,8 +15,11 @@
 #include "uart_controller.h"
 #include "wifi_controller.h"
 #include "mqtt_controller.h"
+#include <stdio.h>
 
-SemaphoreHandle_t pms7003_semaphore, print_semaphore, bme280_semaphore;
+#define MQTT_MESSAGE_MAX_SIZE (256)
+
+SemaphoreHandle_t pms7003_semaphore, mqtt_semaphore, bme280_semaphore;
 
 const TickType_t delay_60s    = pdMS_TO_TICKS(60000);
 const TickType_t delay_10s    = pdMS_TO_TICKS(10000);
@@ -25,16 +28,21 @@ const TickType_t delay_500ms  = pdMS_TO_TICKS(500);
 const TickType_t delay_200ms  = pdMS_TO_TICKS(200);
 const TickType_t delay_15ms   = pdMS_TO_TICKS(15);
 
-static void init(void) 
+typedef struct {
+  pms7003_frame_answer_t  pms7003_frame_answer;
+  bme280_measurements_t   bme280_measurements;
+} ether_measurements_t;
+
+static void ether_init(void) 
 {
-  // wifi_controller_init(&wifi_controller_descriptor_default);
-  // vTaskDelay(delay_1s);
+  wifi_controller_init(&wifi_controller_descriptor_default);
+  vTaskDelay(delay_1s);
   uart_controller_init(&uart_controller_descriptor_default);
   vTaskDelay(delay_1s);
   i2c_controller_init(&i2c_controller_descriptor_default);
   vTaskDelay(delay_1s);
-  // mqtt_controller_init(&mqtt_controller_descriptor_default);
-  // vTaskDelay(delay_1s);
+  mqtt_controller_init(&mqtt_controller_descriptor_default);
+  vTaskDelay(delay_1s);
 }
 
 static uint16_t convert_to_little_endian(uint16_t data) 
@@ -42,34 +50,55 @@ static uint16_t convert_to_little_endian(uint16_t data)
   return ((data & 0x00ff) << 8 | (data & 0xff00) >> 8);
 }
 
-static void print_measurements_task(void *arg) 
+static void create_mqtt_message(const ether_measurements_t *ether_measurements, 
+                                char *mqtt_message)
+{
+  // if ((!ether_measurements) || (!mqtt_message)) {
+  //   return;
+  // }
+
+  snprintf(mqtt_message, MQTT_MESSAGE_MAX_SIZE, 
+           "ether measurements:\n\rpm1 = %d\n\rpm2.5 = %d\n\rpm10 = %d\n\rtemp = %f\n\rhum = %f\n\rpress = %f\n\r", 
+           convert_to_little_endian(ether_measurements->pms7003_frame_answer.data_pm1_standard), 
+           convert_to_little_endian(ether_measurements->pms7003_frame_answer.data_pm25_standard), 
+           convert_to_little_endian(ether_measurements->pms7003_frame_answer.data_pm10_standard),
+           ether_measurements->bme280_measurements.temperature.compensated,
+           ether_measurements->bme280_measurements.humidity.compensated,
+           ether_measurements->bme280_measurements.pressure.compensated);
+
+  printf("%s\n\r", mqtt_message);
+}
+
+static void mqtt_task(void *arg) 
 {
   if (!arg) {
-    ESP_LOGE("PRINT_MEASUREMENTS_TASK", "Received null pointer argument");
+    ESP_LOGE("MQTT_TASK", "Received null pointer argument");
     vTaskDelete(xTaskGetCurrentTaskHandle());
     return;
   }
 
-  pms7003_frame_answer_t *frame = (pms7003_frame_answer_t*)arg;
+  ether_measurements_t *ether_measurements = (ether_measurements_t*)arg;
+  char mqtt_message[MQTT_MESSAGE_MAX_SIZE];
+  const char *mqtt_topic = "/topic/ether";
+  int result = 0;
 
-  static const char *PRINT_MEASUREMENTS_TASK_TAG = "PRINT_MEASUREMENTS_TASK";
-  esp_log_level_set(PRINT_MEASUREMENTS_TASK_TAG, ESP_LOG_INFO);
+  static const char *MQTT_TASK_TAG = "MQTT_TASK";
+  esp_log_level_set(MQTT_TASK_TAG, ESP_LOG_INFO);
 
   while (1) {
-    xSemaphoreTake(print_semaphore, portMAX_DELAY);
+    xSemaphoreTake(mqtt_semaphore, portMAX_DELAY);
 
-    ESP_LOGI(PRINT_MEASUREMENTS_TASK_TAG, "MEASUREMENTS:");
-    ESP_LOGI(PRINT_MEASUREMENTS_TASK_TAG, "PM1_STANDARD = %d", 
-             convert_to_little_endian(frame->data_pm1_standard));
+    ESP_LOGI(MQTT_TASK_TAG, "create data:");
 
-    ESP_LOGI(PRINT_MEASUREMENTS_TASK_TAG, "PM25_STANDARD = %d", 
-             convert_to_little_endian(frame->data_pm25_standard));
+    create_mqtt_message(ether_measurements, 
+                        mqtt_message);
 
-    ESP_LOGI(PRINT_MEASUREMENTS_TASK_TAG, "PM10_STANDARD = %d\n\r", 
-             convert_to_little_endian(frame->data_pm10_standard));
+    ESP_LOGI(MQTT_TASK_TAG, "send data:");
 
-    ESP_LOG_BUFFER_HEXDUMP(PRINT_MEASUREMENTS_TASK_TAG, frame->buffer_answer, 
-                           PMS7003_FRAME_ANSWER_SIZE, ESP_LOG_INFO);
+    result = esp_mqtt_client_publish(mqtt_controller_descriptor_default.client_handle, 
+                            mqtt_topic, mqtt_message, 0, 0, 0);
+
+    ESP_LOGI(MQTT_TASK_TAG, "result: %d", result);
 
     vTaskDelay(delay_60s);
     xSemaphoreGive(pms7003_semaphore);
@@ -147,7 +176,7 @@ static void bme280_task(void *arg)
 
     vTaskDelay(delay_500ms);
 
-    xSemaphoreGive(print_semaphore);
+    xSemaphoreGive(mqtt_semaphore);
   }
 }
 
@@ -199,8 +228,7 @@ static void pms7003_task(void *arg)
 
 void app_main(void) 
 {
-  pms7003_frame_answer_t pms7003_answer_frame = { 0 };
-  bme280_measurements_t bme280_measurements = { 0 };
+  ether_measurements_t ether_measurements = { 0 };
 
   esp_err_t ret = nvs_flash_init();
   if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
@@ -209,15 +237,20 @@ void app_main(void)
   }
   ESP_ERROR_CHECK(ret);
 
-  init();
+  ether_init();
 
   pms7003_semaphore = xSemaphoreCreateBinary();
-  print_semaphore   = xSemaphoreCreateBinary();
+  mqtt_semaphore    = xSemaphoreCreateBinary();
   bme280_semaphore  = xSemaphoreCreateBinary();
 
   xSemaphoreGive(pms7003_semaphore);
 
-  xTaskCreate(pms7003_task, "pms7003_task", 1024 * 2, &pms7003_answer_frame, configMAX_PRIORITIES - 1, NULL);
-  xTaskCreate(print_measurements_task, "print_measurements_task", 1024 * 2, &pms7003_answer_frame, configMAX_PRIORITIES - 1, NULL);
-  xTaskCreate(bme280_task, "bme280_task", 1024 * 2, &bme280_measurements, configMAX_PRIORITIES - 1, NULL);
+  xTaskCreate(pms7003_task, "pms7003_task", 1024 * 2, &ether_measurements.pms7003_frame_answer, 
+              configMAX_PRIORITIES - 1, NULL);
+
+  xTaskCreate(mqtt_task, "mqtt_task", 1024 * 2, &ether_measurements, 
+              configMAX_PRIORITIES - 1, NULL);
+
+  xTaskCreate(bme280_task, "bme280_task", 1024 * 2, &ether_measurements.bme280_measurements, 
+              configMAX_PRIORITIES - 1, NULL);
 }

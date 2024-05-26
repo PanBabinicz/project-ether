@@ -1,6 +1,6 @@
 #include "mqtt_controller.h"
 
-const mqtt_controller_descriptor_t mqtt_controller_descriptor_default = MQTT_CONTROLLER_DESCRIPTOR_DEFAULT;
+mqtt_controller_descriptor_t mqtt_controller_descriptor_default = MQTT_CONTROLLER_DESCRIPTOR_DEFAULT;
 
 static void mqtt_controller_log_error_if_nonzero(const char *message, int error_code) 
 {
@@ -71,16 +71,16 @@ void mqtt_controller_event_handler(void *handler_args, esp_event_base_t base,
   }
 }
 
-mqtt_controller_result_t mqtt_controller_init(const mqtt_controller_descriptor_t *mqtt_controller_descriptor) 
+mqtt_controller_result_t mqtt_controller_init(mqtt_controller_descriptor_t *mqtt_controller_descriptor) 
 {
   if (!mqtt_controller_descriptor) {
     return MQTT_CONTROLLER_RESULT_ERROR;
   }
 
-  esp_mqtt_client_handle_t client = esp_mqtt_client_init(&mqtt_controller_descriptor->client_config);
+  mqtt_controller_descriptor->client_handle = esp_mqtt_client_init(&mqtt_controller_descriptor->client_config);
   /* The last argument may be used to pass data to the event handler, in this example mqtt_event_handler */
-  esp_mqtt_client_register_event(client, ESP_EVENT_ANY_ID, mqtt_controller_descriptor->event_handler, NULL);
-  esp_mqtt_client_start(client);
+  esp_mqtt_client_register_event(mqtt_controller_descriptor->client_handle, ESP_EVENT_ANY_ID, mqtt_controller_descriptor->event_handler, NULL);
+  esp_mqtt_client_start(mqtt_controller_descriptor->client_handle);
 
   return MQTT_CONTROLLER_RESULT_SUCCESS;
 }

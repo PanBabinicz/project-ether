@@ -18,7 +18,7 @@
 #include "esp_log.h"
 #include "mqtt_client.h"
 
-#define MQTT_CONTROLLER_BROKER_ADDRESS_URI ("mqtt://192.168.72.80:1883")
+#define MQTT_CONTROLLER_BROKER_ADDRESS_URI ("mqtt://192.168.35.80:1883")
 
 /** 
  * \param
@@ -40,8 +40,9 @@ typedef enum {
  * \param
  */
 typedef struct {
-  const esp_mqtt_client_config_t client_config;
-  const mqtt_controller_event_handler_t event_handler;
+  esp_mqtt_client_config_t client_config;
+  esp_mqtt_client_handle_t client_handle;
+  mqtt_controller_event_handler_t event_handler;
 } mqtt_controller_descriptor_t;
 
 /** 
@@ -58,14 +59,14 @@ typedef struct {
  */
 #define MQTT_CONTROLLER_DESCRIPTOR_DEFAULT  {       \
   .client_config = MQTT_CONTROLLER_CONFIG_DEFAULT,  \
-  .event_handler = mqtt_controller_event_handler,   \
+  .event_handler = mqtt_controller_event_handler, \
 }
 
 /** 
  * \param
  * \param
  */
-extern const mqtt_controller_descriptor_t mqtt_controller_descriptor_default;
+extern mqtt_controller_descriptor_t mqtt_controller_descriptor_default;
 
 /** 
  * \param
@@ -78,6 +79,6 @@ void mqtt_controller_event_handler(void *handler_args, esp_event_base_t base,
  * \param
  * \param
  */
-mqtt_controller_result_t mqtt_controller_init(const mqtt_controller_descriptor_t *mqtt_controller_descriptor);
+mqtt_controller_result_t mqtt_controller_init(mqtt_controller_descriptor_t *mqtt_controller_descriptor);
 
 #endif // !INC_MQTT_CONTROLLER_H
