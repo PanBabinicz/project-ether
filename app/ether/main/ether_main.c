@@ -193,7 +193,7 @@ static void pms7003_task(void *arg)
 
   pms7003_frame_answer_t *pms7003_frame_answer = (pms7003_frame_answer_t*)arg;
 
-  pms7003_frame_send(pms7003_change_mode_passive, 
+  pms7003_frame_send(&pms7003_change_mode_passive, 
                      uart_controller_descriptor_default.uart_port);
 
   vTaskDelay(delay_500ms);
@@ -201,7 +201,7 @@ static void pms7003_task(void *arg)
   while (1) {
     xSemaphoreTake(pms7003_semaphore, portMAX_DELAY);
     
-    pms7003_frame_send(pms7003_wakeup, uart_controller_descriptor_default.uart_port);
+    pms7003_frame_send(&pms7003_wakeup, uart_controller_descriptor_default.uart_port);
 
     /* Wait at least 30s to get stable data. */
     vTaskDelay(delay_60s/2);
@@ -209,16 +209,16 @@ static void pms7003_task(void *arg)
     for (uint8_t i = 0; i < 5; i++) {
       /* Avoid getting not stable data. */
       uart_flush(uart_controller_descriptor_default.uart_port);
-      pms7003_frame_send(pms7003_read_request, uart_controller_descriptor_default.uart_port);
+      pms7003_frame_send(&pms7003_read_request, uart_controller_descriptor_default.uart_port);
       vTaskDelay(delay_500ms);
     }
     
-    pms7003_frame_receive(pms7003_read, 
+    pms7003_frame_receive(&pms7003_read, 
                           uart_controller_descriptor_default.uart_port, pms7003_frame_answer);
 
     vTaskDelay(delay_500ms);
 
-    pms7003_frame_send(pms7003_sleep, uart_controller_descriptor_default.uart_port);
+    pms7003_frame_send(&pms7003_sleep, uart_controller_descriptor_default.uart_port);
 
     vTaskDelay(delay_500ms);
 
