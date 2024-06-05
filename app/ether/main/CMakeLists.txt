@@ -7,6 +7,7 @@ idf_component_register(
     "../src/uart_controller.c" 
     "../src/wifi_controller.c"
     "../src/mqtt_controller.c"
+    "../src/ether.c"
   INCLUDE_DIRS 
     "." 
     "../inc"

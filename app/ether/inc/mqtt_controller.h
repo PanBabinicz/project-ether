@@ -18,7 +18,9 @@
 #include "esp_log.h"
 #include "mqtt_client.h"
 
-#define MQTT_CONTROLLER_BROKER_ADDRESS_URI ("mqtt://192.168.35.80:1883")
+#define MQTT_CONTROLLER_BROKER_ADDRESS_URI  ("mqtt://192.168.235.80:1883")
+#define MQTT_CONTROLLER_MESSAGE_MAX_SIZE    (256)
+
 
 /** 
  * \param
@@ -61,12 +63,6 @@ typedef struct {
   .client_config = MQTT_CONTROLLER_CONFIG_DEFAULT,  \
   .event_handler = mqtt_controller_event_handler, \
 }
-
-/** 
- * \param
- * \param
- */
-extern mqtt_controller_descriptor_t mqtt_controller_descriptor_default;
 
 /** 
  * \param

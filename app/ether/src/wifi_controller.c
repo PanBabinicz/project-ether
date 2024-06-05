@@ -2,8 +2,6 @@
 /* FreeRTOS event group to signal when we are connected */
 static EventGroupHandle_t event_group;
 
-const wifi_controller_descriptor_t wifi_controller_descriptor_default = WIFI_CONTROLLER_DESCRIPTOR_DEFAULT;
-
 void wifi_controller_event_handler(void *arg, esp_event_base_t event_base, 
                                    int32_t event_id, void *event_data) 
 {

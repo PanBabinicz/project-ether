@@ -38,8 +38,8 @@ typedef void (*wifi_controller_event_handler_t)(void *, esp_event_base_t, int32_
  * \param
  */
 typedef struct {
-  const wifi_config_t wifi_config;
-  const wifi_controller_event_handler_t event_handler;
+  wifi_config_t wifi_config;
+  wifi_controller_event_handler_t event_handler;
 } wifi_controller_descriptor_t;
 
 /** 
@@ -59,12 +59,6 @@ typedef struct {
     .event_handler = wifi_controller_event_handler,   \
   }
 #endif
-
-/** 
- * \param
- * \param
- */
-extern const wifi_controller_descriptor_t wifi_controller_descriptor_default;
 
 /** 
  * \param

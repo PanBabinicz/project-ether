@@ -21,8 +21,8 @@ typedef enum {
  * \param
  */
 typedef struct {
-  const uart_config_t uart_config;
-  const uart_port_t uart_port;
+  uart_config_t uart_config;
+  uart_port_t uart_port;
 } uart_controller_descriptor_t;
 
 #define UART_CONTROLLER_RX_BUF_SIZE (1024)
@@ -50,12 +50,6 @@ typedef struct {
   .uart_config = UART_CONTROLLER_CONFIG_DEFAULT,  \
   .uart_port = UART_NUM_2,                        \
 }
-
-/** 
- * \param
- * \param
- */
-extern const uart_controller_descriptor_t uart_controller_descriptor_default;
 
 /** 
  * \param

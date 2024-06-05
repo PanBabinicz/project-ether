@@ -66,6 +66,16 @@ typedef union {
  * \param
  * \param
  */
+typedef struct {
+  uint16_t pm1;
+  uint16_t pm25;
+  uint16_t pm10;
+} pms7003_measurements_t;
+
+/** 
+ * \param
+ * \param
+ */
 typedef enum {
   PMS7003_RESULT_SUCCESS = 0,
   PMS7003_RESULT_ERROR,
@@ -82,6 +92,20 @@ typedef enum {
   PMS7003_STATUS_OK = 0,
   PMS7003_STATUS_READY,
 } pms7003_status_t;
+
+/** 
+ * \param
+ * \param
+ */
+typedef enum {
+  PMS7003_STATE_READ_REQUEST = 0,
+  PMS7003_STATE_CHANGE_MODE_PASSIVE,
+  PMS7003_STATE_CHANGE_MODE_ACTIVE,
+  PMS7003_STATE_SLEEP,
+  PMS7003_STATE_WAKEUP,
+  PMS7003_STATE_READ,
+  PMS7003_STATE_UNSET = 0xFF,
+} pms7003_state_t;
 
 /** 
  * \param

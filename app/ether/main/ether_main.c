@@ -1,48 +1,39 @@
-#include "freertos/FreeRTOS.h"
-#include "freertos/projdefs.h"
-#include "freertos/task.h"
-#include "esp_system.h"
-#include "esp_log.h"
-#include "driver/uart.h"
-#include "hal/uart_types.h"
-#include "portmacro.h"
-#include "string.h"
-#include "driver/gpio.h"
-#include "pms7003.h"
-#include "bme280.h"
-#include "i2c_controller.h"
-#include "mqtt_client.h"
-#include "uart_controller.h"
-#include "wifi_controller.h"
-#include "mqtt_controller.h"
-#include <stdio.h>
+#include "ether.h"
 
-#define MQTT_MESSAGE_MAX_SIZE (256)
+const TickType_t ether_delay_60s    = pdMS_TO_TICKS(60000);
+const TickType_t ether_delay_30s    = pdMS_TO_TICKS(30000);
+const TickType_t ether_delay_10s    = pdMS_TO_TICKS(10000);
+const TickType_t ether_delay_1s     = pdMS_TO_TICKS(1000);
+const TickType_t ether_delay_500ms  = pdMS_TO_TICKS(500);
+const TickType_t ether_delay_200ms  = pdMS_TO_TICKS(200);
+const TickType_t ether_delay_15ms   = pdMS_TO_TICKS(15);
 
-SemaphoreHandle_t pms7003_semaphore, mqtt_semaphore, bme280_semaphore;
+SemaphoreHandle_t ether_pms7003_semaphore;
+SemaphoreHandle_t ether_mqtt_semaphore; 
+SemaphoreHandle_t ether_bme280_semaphore;
 
-const TickType_t delay_60s    = pdMS_TO_TICKS(60000);
-const TickType_t delay_10s    = pdMS_TO_TICKS(10000);
-const TickType_t delay_1s     = pdMS_TO_TICKS(1000);
-const TickType_t delay_500ms  = pdMS_TO_TICKS(500);
-const TickType_t delay_200ms  = pdMS_TO_TICKS(200);
-const TickType_t delay_15ms   = pdMS_TO_TICKS(15);
+///////////////////////////////////////////////////////////////////////////////
+/* BEGIN OF STATIC FUNCTIONS                                                 */
+///////////////////////////////////////////////////////////////////////////////
 
-typedef struct {
-  pms7003_frame_answer_t  pms7003_frame_answer;
-  bme280_measurements_t   bme280_measurements;
-} ether_measurements_t;
-
-static void ether_init(void) 
+/* The ether pointer can't be const because of the mqtt_descriptor. */
+static void controller_init(ether_t *ether) 
 {
-  wifi_controller_init(&wifi_controller_descriptor_default);
-  vTaskDelay(delay_1s);
-  uart_controller_init(&uart_controller_descriptor_default);
-  vTaskDelay(delay_1s);
-  i2c_controller_init(&i2c_controller_descriptor_default);
-  vTaskDelay(delay_1s);
-  mqtt_controller_init(&mqtt_controller_descriptor_default);
-  vTaskDelay(delay_1s);
+  if (!ether) {
+    return;
+  }
+
+  wifi_controller_init(&ether->descriptor.wifi_controller);
+  vTaskDelay(ether_delay_1s);
+
+  uart_controller_init(&ether->descriptor.uart_controller);
+  vTaskDelay(ether_delay_1s);
+
+  i2c_controller_init(&ether->descriptor.i2c_controller);
+  vTaskDelay(ether_delay_1s);
+
+  mqtt_controller_init(&ether->descriptor.mqtt_controller);
+  vTaskDelay(ether_delay_1s);
 }
 
 static uint16_t convert_to_little_endian(uint16_t data) 
@@ -50,137 +41,238 @@ static uint16_t convert_to_little_endian(uint16_t data)
   return ((data & 0x00ff) << 8 | (data & 0xff00) >> 8);
 }
 
-static void create_mqtt_message(const ether_measurements_t *ether_measurements, 
-                                char *mqtt_message)
+static void create_mqtt_message(const ether_t *ether, char *mqtt_message)
 {
-  // if ((!ether_measurements) || (!mqtt_message)) {
-  //   return;
-  // }
-
-  snprintf(mqtt_message, MQTT_MESSAGE_MAX_SIZE, 
-           "ether measurements:\n\rpm1 = %d\n\rpm2.5 = %d\n\rpm10 = %d\n\rtemp = %f\n\rhum = %f\n\rpress = %f\n\r", 
-           convert_to_little_endian(ether_measurements->pms7003_frame_answer.data_pm1_standard), 
-           convert_to_little_endian(ether_measurements->pms7003_frame_answer.data_pm25_standard), 
-           convert_to_little_endian(ether_measurements->pms7003_frame_answer.data_pm10_standard),
-           ether_measurements->bme280_measurements.temperature.compensated,
-           ether_measurements->bme280_measurements.humidity.compensated,
-           ether_measurements->bme280_measurements.pressure.compensated);
-
-  printf("%s\n\r", mqtt_message);
-}
-
-static void mqtt_task(void *arg) 
-{
-  if (!arg) {
-    ESP_LOGE("MQTT_TASK", "Received null pointer argument");
-    vTaskDelete(xTaskGetCurrentTaskHandle());
+  if ((!ether) || (!mqtt_message)) {
     return;
   }
 
-  ether_measurements_t *ether_measurements = (ether_measurements_t*)arg;
-  char mqtt_message[MQTT_MESSAGE_MAX_SIZE];
-  const char *mqtt_topic = "/topic/ether";
-  int result = 0;
+  snprintf(mqtt_message, MQTT_CONTROLLER_MESSAGE_MAX_SIZE, 
+           "ether measurements:\n\rpm1 = %d\n\rpm2.5 = %d\n\rpm10 = %d\n\rtemp = %f\n\rhum = %f\n\rpress = %f\n\r", 
+           convert_to_little_endian(ether->measurements.pms7003.pm1), 
+           convert_to_little_endian(ether->measurements.pms7003.pm25), 
+           convert_to_little_endian(ether->measurements.pms7003.pm10),
+           ether->measurements.bme280.temperature.compensated,
+           ether->measurements.bme280.humidity.compensated,
+           ether->measurements.bme280.pressure.compensated);
+}
 
+///////////////////////////////////////////////////////////////////////////////
+/* END OF STATIC FUNCTIONS                                                   */
+///////////////////////////////////////////////////////////////////////////////
+
+void ether_run(void)
+{
+}
+
+void ether_mqtt_task(void *arg)
+{
+  
   static const char *MQTT_TASK_TAG = "MQTT_TASK";
   esp_log_level_set(MQTT_TASK_TAG, ESP_LOG_INFO);
 
-  while (1) {
-    xSemaphoreTake(mqtt_semaphore, portMAX_DELAY);
-
-    ESP_LOGI(MQTT_TASK_TAG, "create data:");
-
-    create_mqtt_message(ether_measurements, 
-                        mqtt_message);
-
-    ESP_LOGI(MQTT_TASK_TAG, "send data:");
-
-    result = esp_mqtt_client_publish(mqtt_controller_descriptor_default.client_handle, 
-                            mqtt_topic, mqtt_message, 0, 0, 0);
-
-    ESP_LOGI(MQTT_TASK_TAG, "result: %d", result);
-
-    vTaskDelay(delay_60s);
-    xSemaphoreGive(pms7003_semaphore);
-  }
-}
-
-static void bme280_task(void *arg) 
-{
   if (!arg) {
-    ESP_LOGE("BME280_TASK", "Received null pointer argument");
+    ESP_LOGE(MQTT_TASK_TAG, "Received null pointer argument");
     vTaskDelete(xTaskGetCurrentTaskHandle());
     return;
   }
 
-  static const char *BME280_TASK_TAG = "BME280_TASK";
-  esp_log_level_set(BME280_TASK_TAG, ESP_LOG_INFO);
-
-  bme280_measurements_t *bme280_measurements = arg;
-
-  uint8_t data = 0;
-  
-  bme280_reset(i2c_controller_descriptor_default.i2c_num);
-  bme280_init(i2c_controller_descriptor_default.i2c_num, &bme280_default_settings);
-  bme280_id(i2c_controller_descriptor_default.i2c_num, &data, sizeof(data));
-
-  if (data != BME280_DATA_ID) {
-    ESP_LOGI(BME280_TASK_TAG, "The id is not valid!\n\rClosing bme280 task...\n\r");
-    vTaskDelete(xTaskGetCurrentTaskHandle());
-  }
-
-  bme280_get_compensation_data(i2c_controller_descriptor_default.i2c_num, 
-                               &bme280_measurements->compensator);
+  ether_t *ether = arg;
+  char mqtt_message[MQTT_CONTROLLER_MESSAGE_MAX_SIZE];
+  const char *mqtt_topic = "/topic/ether";
+  int result = 0;
 
   while (1) {
-    xSemaphoreTake(bme280_semaphore, portMAX_DELAY);
+    xSemaphoreTake(ether_mqtt_semaphore, portMAX_DELAY);
 
-    bme280_force_mode(i2c_controller_descriptor_default.i2c_num, &bme280_default_settings);
+    ESP_LOGI(MQTT_TASK_TAG, "create data:");
+    create_mqtt_message(ether, mqtt_message);
 
-    /* 
-     * time_measure[max_in_ms] = 1.25 + (2.3 * temp_oversampling) + 
-     *                           (2.3 * press_oversampling + 0.575) +
-     *                           (2.3 * hum_oversampling + 0.575)
-     *
-     * time_measure[max_in_ms] = 1.25 + 2.3 + (2.3 + 0.575) + (2.3 + 0.575)
-     * time_measure[max_in_ms] = 9.3ms
-     */
-    vTaskDelay(delay_15ms);
+    ESP_LOGI(MQTT_TASK_TAG, "send data:");
+    result = esp_mqtt_client_publish(ether->descriptor.mqtt_controller.client_handle, 
+                                     mqtt_topic, mqtt_message, 0, 0, 0);
 
-    bme280_measure_humidity(i2c_controller_descriptor_default.i2c_num, 
-                            &bme280_measurements->humidity);
+    ESP_LOGI(MQTT_TASK_TAG, "result: %d", result);
 
-    bme280_measure_pressure(i2c_controller_descriptor_default.i2c_num, 
-                            &bme280_measurements->pressure);
-
-    bme280_measure_temperature(i2c_controller_descriptor_default.i2c_num, 
-                               &bme280_measurements->temperature);
-
-    bme280_compensate_humidity(&bme280_measurements->compensator, 
-                               &bme280_measurements->humidity);
-
-    bme280_compensate_pressure(&bme280_measurements->compensator, 
-                               &bme280_measurements->pressure);
-
-    bme280_compensate_temperature(&bme280_measurements->compensator, 
-                                  &bme280_measurements->temperature);
-    
-    ESP_LOGI(BME280_TASK_TAG, "humidity = %f", 
-             bme280_measurements->humidity.compensated);
-
-    ESP_LOGI(BME280_TASK_TAG, "pressure = %f", 
-             bme280_measurements->pressure.compensated);
-
-    ESP_LOGI(BME280_TASK_TAG, "temperature = %f\n\r", 
-             bme280_measurements->temperature.compensated);
-
-    vTaskDelay(delay_500ms);
-
-    xSemaphoreGive(mqtt_semaphore);
+    vTaskDelay(ether_delay_60s);
+    xSemaphoreGive(ether_pms7003_semaphore);
   }
 }
 
-static void pms7003_task(void *arg)
+void ether_bme280_task(void *arg)
+{
+  static const char *BME280_TASK_TAG = "BME280_TASK";
+  esp_log_level_set(BME280_TASK_TAG, ESP_LOG_INFO);
+
+  if (!arg) {
+    ESP_LOGE(BME280_TASK_TAG, "Received null pointer argument");
+    vTaskDelete(xTaskGetCurrentTaskHandle());
+    return;
+  }
+
+  ether_t *ether = arg;
+  uint8_t data, retry;
+  bme280_result_t result;
+
+  ether->state_machine.bme280 = BME280_STATE_RESET;
+
+  data = retry = 0;
+  while (1) {
+    xSemaphoreTake(ether_bme280_semaphore, portMAX_DELAY);
+
+    while (ether->state_machine.bme280 != BME280_STATE_UNSET) {
+      ESP_LOGI(BME280_TASK_TAG, "STATE: %d", ether->state_machine.bme280);
+      if (retry > 5) {
+        retry = 0;
+        ether->state_machine.bme280 = BME280_STATE_RESET;
+
+        /* Break the loop. */
+        break;
+      }
+
+      switch (ether->state_machine.bme280) {
+        case BME280_STATE_RESET: {
+          result = bme280_reset(ether->descriptor.i2c_controller.i2c_num);
+          if (result != BME280_RESULT_SUCCESS) {
+            ++retry;
+            break;
+          }
+          ether->state_machine.bme280 = BME280_STATE_INIT;
+          break;
+        }
+        case BME280_STATE_INIT: {
+          result = bme280_init(ether->descriptor.i2c_controller.i2c_num, &ether->settings.bme280);
+          if (result != BME280_RESULT_SUCCESS) {
+            ++retry;
+            break;
+          }
+          ether->state_machine.bme280 = BME280_STATE_ID;
+          break;
+        }
+        case BME280_STATE_ID: {
+          result = bme280_id(ether->descriptor.i2c_controller.i2c_num, &data, sizeof(data));
+          if (result != BME280_RESULT_SUCCESS) {
+            ++retry;
+            break;
+          }
+
+          if (data != BME280_DATA_ID) {
+            ESP_LOGI(BME280_TASK_TAG, "The id is not valid!\n\rClosing bme280 task...\n\r");
+            ether->state_machine.bme280 = BME280_STATE_RESET;
+            break;
+          }
+          ether->state_machine.bme280 = BME280_STATE_GET_COMPENSATION_DATA;
+          break;
+        }
+        case BME280_STATE_GET_COMPENSATION_DATA: {
+          result = bme280_get_compensation_data(ether->descriptor.i2c_controller.i2c_num, 
+                                                &ether->measurements.bme280.compensator);
+          if (result != BME280_RESULT_SUCCESS) {
+            ++retry;
+            break;
+          }
+          ether->state_machine.bme280 = BME280_STATE_FORCE_MODE;
+          break;
+        }
+        case BME280_STATE_FORCE_MODE: {
+          result = bme280_force_mode(ether->descriptor.i2c_controller.i2c_num, &ether->settings.bme280);
+          if (result != BME280_RESULT_SUCCESS) {
+            ++retry;
+            break;
+          }
+          /* 
+           * time_measure[max_in_ms] = 1.25 + (2.3 * temp_oversampling) + 
+           *                           (2.3 * press_oversampling + 0.575) +
+           *                           (2.3 * hum_oversampling + 0.575)
+           *
+           * time_measure[max_in_ms] = 1.25 + 2.3 + (2.3 + 0.575) + (2.3 + 0.575)
+           * time_measure[max_in_ms] = 9.3ms
+           */
+          vTaskDelay(ether_delay_15ms);
+          ether->state_machine.bme280 = BME280_STATE_MEASURE_HUMIDITY;
+          break;
+        }
+        case BME280_STATE_MEASURE_HUMIDITY: {
+          result = bme280_measure_humidity(ether->descriptor.i2c_controller.i2c_num, 
+                                           &ether->measurements.bme280.humidity);
+          if (result != BME280_RESULT_SUCCESS) {
+            ++retry;
+            break;
+          }
+          ether->state_machine.bme280 = BME280_STATE_MEASURE_TEMPERATURE;
+          break;
+        }
+        case BME280_STATE_MEASURE_TEMPERATURE: {
+          result = bme280_measure_temperature(ether->descriptor.i2c_controller.i2c_num, 
+                                              &ether->measurements.bme280.temperature);
+          if (result != BME280_RESULT_SUCCESS) {
+            ++retry;
+            break;
+          }
+          ether->state_machine.bme280 = BME280_STATE_MEASURE_PRESSURE;
+          break;
+        }
+        case BME280_STATE_MEASURE_PRESSURE: {
+          result = bme280_measure_pressure(ether->descriptor.i2c_controller.i2c_num, 
+                                           &ether->measurements.bme280.pressure);
+          if (result != BME280_RESULT_SUCCESS) {
+            ++retry;
+            break;
+          }
+          ether->state_machine.bme280 = BME280_STATE_COMPENSATE_HUMIDITY;
+          break;
+        }
+        case BME280_STATE_COMPENSATE_HUMIDITY: {
+          result = bme280_compensate_humidity(&ether->measurements.bme280.compensator, 
+                                              &ether->measurements.bme280.humidity);
+          if (result != BME280_RESULT_SUCCESS) {
+            ++retry;
+            break;
+          }
+          ether->state_machine.bme280 = BME280_STATE_COMPENSATE_TEMPERATURE;
+          break;
+        }
+        case BME280_STATE_COMPENSATE_TEMPERATURE: {
+          result = bme280_compensate_temperature(&ether->measurements.bme280.compensator, 
+                                                 &ether->measurements.bme280.temperature);
+          if (result != BME280_RESULT_SUCCESS) {
+            ++retry;
+            break;
+          }
+          ether->state_machine.bme280 = BME280_STATE_COMPENSATE_PRESSURE;
+          break;
+        }
+        case BME280_STATE_COMPENSATE_PRESSURE: {
+          result = bme280_compensate_pressure(&ether->measurements.bme280.compensator, 
+                                              &ether->measurements.bme280.pressure);
+          if (result != BME280_RESULT_SUCCESS) {
+            ++retry;
+            break;
+          }
+          ether->state_machine.bme280 = BME280_STATE_UNSET;
+          break;
+        }
+        default: {
+          ether->state_machine.bme280 = BME280_STATE_UNSET;
+          break;
+        }
+      }
+    }
+
+    ether->state_machine.bme280 = BME280_STATE_FORCE_MODE;
+    retry = 0;
+
+    ESP_LOGI(BME280_TASK_TAG, "humidity = %f", ether->measurements.bme280.humidity.compensated);
+    ESP_LOGI(BME280_TASK_TAG, "pressure = %f", ether->measurements.bme280.pressure.compensated);
+    ESP_LOGI(BME280_TASK_TAG, "temperature = %f\n\r", ether->measurements.bme280.temperature.compensated);
+
+    vTaskDelay(ether_delay_500ms);
+
+    xSemaphoreGive(ether_mqtt_semaphore);
+  }
+}
+
+void ether_pms7003_task(void *arg)
 {
   static const char *PMS7003_TASK_TAG = "PMS7003_TASK";
   esp_log_level_set(PMS7003_TASK_TAG, ESP_LOG_INFO);
@@ -191,44 +283,135 @@ static void pms7003_task(void *arg)
     return;
   }
 
-  pms7003_frame_answer_t *pms7003_frame_answer = (pms7003_frame_answer_t*)arg;
+  ether_t *ether = arg;
+  pms7003_frame_answer_t frame = { 0 };
+  uint8_t retry = 0;
+  pms7003_result_t result;
 
-  pms7003_frame_send(&pms7003_change_mode_passive, 
-                     uart_controller_descriptor_default.uart_port);
-
-  vTaskDelay(delay_500ms);
+  ether->state_machine.pms7003 = PMS7003_STATE_CHANGE_MODE_PASSIVE;
 
   while (1) {
-    xSemaphoreTake(pms7003_semaphore, portMAX_DELAY);
+    xSemaphoreTake(ether_pms7003_semaphore, portMAX_DELAY);
     
-    pms7003_frame_send(&pms7003_wakeup, uart_controller_descriptor_default.uart_port);
+    while (ether->state_machine.pms7003 != PMS7003_STATE_UNSET) {
+      ESP_LOGI(PMS7003_TASK_TAG, "STATE: %d", ether->state_machine.pms7003);
+      if (retry > 50) {
+        retry = 0;
+        ether->state_machine.pms7003 = PMS7003_STATE_CHANGE_MODE_PASSIVE;
 
-    /* Wait at least 30s to get stable data. */
-    vTaskDelay(delay_60s/2);
+        /* Break the loop. */
+        break;
+      }
 
-    for (uint8_t i = 0; i < 5; i++) {
-      /* Avoid getting not stable data. */
-      uart_flush(uart_controller_descriptor_default.uart_port);
-      pms7003_frame_send(&pms7003_read_request, uart_controller_descriptor_default.uart_port);
-      vTaskDelay(delay_500ms);
+      // vTaskDelay(ether_delay_500ms);
+
+      switch (ether->state_machine.pms7003) {
+        case PMS7003_STATE_CHANGE_MODE_PASSIVE: {
+          ESP_LOGI(PMS7003_TASK_TAG, "PMS7003_STATE_CHANGE_MODE_PASSIVE");
+          result = pms7003_frame_send(&pms7003_change_mode_passive,
+                                      ether->descriptor.uart_controller.uart_port);
+          ESP_LOGI(PMS7003_TASK_TAG, "result: %d", result);
+          // if (result != PMS7003_RESULT_SUCCESS) {
+          //   ++retry;
+          //   break;
+          // }
+          ether->state_machine.pms7003 = PMS7003_STATE_WAKEUP;
+          vTaskDelay(ether_delay_500ms);
+          break;
+        }
+        case PMS7003_STATE_CHANGE_MODE_ACTIVE: {
+          ESP_LOGI(PMS7003_TASK_TAG, "PMS7003_STATE_CHANGE_MODE_ACTIVE");
+          result = pms7003_frame_send(&pms7003_change_mode_active,
+                                      ether->descriptor.uart_controller.uart_port);
+          ESP_LOGI(PMS7003_TASK_TAG, "result: %d", result);
+          // if (result != PMS7003_RESULT_SUCCESS) {
+          //   ++retry;
+          //   break;
+          // }
+          ether->state_machine.pms7003 = PMS7003_STATE_WAKEUP;
+          vTaskDelay(ether_delay_500ms);
+          break;
+        }
+        case PMS7003_STATE_WAKEUP: {
+          ESP_LOGI(PMS7003_TASK_TAG, "PMS7003_STATE_WAKEUP");
+          result = pms7003_frame_send(&pms7003_wakeup, ether->descriptor.uart_controller.uart_port);
+          ESP_LOGI(PMS7003_TASK_TAG, "result: %d", result);
+          // if (result != PMS7003_RESULT_SUCCESS) {
+          //   ++retry;
+          //   break;
+          // }
+          ether->state_machine.pms7003 = PMS7003_STATE_READ_REQUEST;
+          /* Wait at least 30s to get stable data. */
+          vTaskDelay(ether_delay_30s);
+          break;
+        }
+        case PMS7003_STATE_READ_REQUEST: {
+          ESP_LOGI(PMS7003_TASK_TAG, "PMS7003_STATE_READ_REQUEST");
+          for (uint8_t i = 0; i < 5; i++) {
+            /* Avoid getting not stable data. */
+            uart_flush(ether->descriptor.uart_controller.uart_port);
+            result = pms7003_frame_send(&pms7003_read_request, ether->descriptor.uart_controller.uart_port);
+            ESP_LOGI(PMS7003_TASK_TAG, "result: %d", result);
+            vTaskDelay(ether_delay_500ms);
+          }
+
+          // if (result != PMS7003_RESULT_SUCCESS) {
+          //   ++retry;
+          //   break;
+          // }
+          ether->state_machine.pms7003 = PMS7003_STATE_READ;
+          break;
+        }
+        case PMS7003_STATE_READ: {
+          ESP_LOGI(PMS7003_TASK_TAG, "PMS7003_STATE_READ");
+          result = pms7003_frame_receive(&pms7003_read, ether->descriptor.uart_controller.uart_port, &frame);
+          ESP_LOGI(PMS7003_TASK_TAG, "result: %d", result);
+          // if (result != PMS7003_RESULT_SUCCESS) {
+          //   ++retry;
+          //   break;
+          // }
+          ether->state_machine.pms7003 = PMS7003_STATE_SLEEP;
+          vTaskDelay(ether_delay_500ms);
+          break;
+        }
+        case PMS7003_STATE_SLEEP: {
+          ESP_LOGI(PMS7003_TASK_TAG, "PMS7003_STATE_SLEEP");
+          result = pms7003_frame_send(&pms7003_sleep, ether->descriptor.uart_controller.uart_port);
+          ESP_LOGI(PMS7003_TASK_TAG, "result: %d", result);
+          // if (result != PMS7003_RESULT_SUCCESS) {
+          //   ++retry;
+          //   break;
+          // }
+          ether->state_machine.pms7003 = PMS7003_STATE_UNSET;
+          vTaskDelay(ether_delay_500ms);
+          break;
+        }
+        default: {
+          ESP_LOGI(PMS7003_TASK_TAG, "default");
+          ether->state_machine.pms7003 = PMS7003_STATE_UNSET;
+          vTaskDelay(ether_delay_500ms);
+          break;
+        }
+      }
     }
     
-    pms7003_frame_receive(&pms7003_read, 
-                          uart_controller_descriptor_default.uart_port, pms7003_frame_answer);
+    ether->measurements.pms7003.pm1   = frame.data_pm1_standard;
+    ether->measurements.pms7003.pm25  = frame.data_pm25_standard;
+    ether->measurements.pms7003.pm10  = frame.data_pm10_standard;
 
-    vTaskDelay(delay_500ms);
+    ether->state_machine.pms7003 = PMS7003_STATE_WAKEUP;
 
-    pms7003_frame_send(&pms7003_sleep, uart_controller_descriptor_default.uart_port);
+    retry = 0;
 
-    vTaskDelay(delay_500ms);
-
-    xSemaphoreGive(bme280_semaphore);
+    xSemaphoreGive(ether_bme280_semaphore);
   }
 }
 
 void app_main(void) 
 {
-  ether_measurements_t ether_measurements = { 0 };
+  ether_t ether;
+
+  esp_task_wdt_deinit();
 
   esp_err_t ret = nvs_flash_init();
   if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
@@ -237,20 +420,18 @@ void app_main(void)
   }
   ESP_ERROR_CHECK(ret);
 
-  ether_init();
+  ether_init(&ether);
+  controller_init(&ether);
 
-  pms7003_semaphore = xSemaphoreCreateBinary();
-  mqtt_semaphore    = xSemaphoreCreateBinary();
-  bme280_semaphore  = xSemaphoreCreateBinary();
+  ether_pms7003_semaphore = xSemaphoreCreateBinary();
+  ether_mqtt_semaphore    = xSemaphoreCreateBinary();
+  ether_bme280_semaphore  = xSemaphoreCreateBinary();
 
-  xSemaphoreGive(pms7003_semaphore);
+  xSemaphoreGive(ether_pms7003_semaphore);
 
-  xTaskCreate(pms7003_task, "pms7003_task", 1024 * 2, &ether_measurements.pms7003_frame_answer, 
-              configMAX_PRIORITIES - 1, NULL);
+  xTaskCreate(ether_pms7003_task, "pms7003_task", 4096 * 2, &ether, configMAX_PRIORITIES - 1, NULL);
+  xTaskCreate(ether_mqtt_task, "mqtt_task", 4096 * 2, &ether, configMAX_PRIORITIES - 1, NULL);
+  xTaskCreate(ether_bme280_task, "bme280_task", 4096 * 2, &ether, configMAX_PRIORITIES - 1, NULL);
 
-  xTaskCreate(mqtt_task, "mqtt_task", 1024 * 2, &ether_measurements, 
-              configMAX_PRIORITIES - 1, NULL);
-
-  xTaskCreate(bme280_task, "bme280_task", 1024 * 2, &ether_measurements.bme280_measurements, 
-              configMAX_PRIORITIES - 1, NULL);
+  while(1);
 }

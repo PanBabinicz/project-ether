@@ -1,8 +1,5 @@
 #include "bme280.h"
-#include "i2c_controller.h"
-#include <stdint.h>
 
-const bme280_settings_t bme280_default_settings = BME280_DEFAULT_SETTINGS;
 static int32_t t_fine;
 
 bme280_result_t bme280_init(i2c_port_t i2c_num, const bme280_settings_t *settings) 

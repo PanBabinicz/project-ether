@@ -1,7 +1,5 @@
 #include "uart_controller.h"
 
-const uart_controller_descriptor_t uart_controller_descriptor_default = UART_CONTROLLER_DESCRIPTOR_DEFAULT;
-
 uart_controller_result_t uart_controller_init(const uart_controller_descriptor_t *uart_controller_descriptor) 
 {
   if (!uart_controller_descriptor) {

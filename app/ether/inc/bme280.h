@@ -124,6 +124,26 @@ typedef enum {
  * \param
  * \param
  */
+typedef enum {
+  BME280_STATE_INIT = 0,
+  BME280_STATE_RESET,
+  BME280_STATE_ID,
+  BME280_STATE_FORCE_MODE,
+  BME280_STATE_MEASURE_HUMIDITY,
+  BME280_STATE_MEASURE_TEMPERATURE,
+  BME280_STATE_MEASURE_PRESSURE,
+  BME280_STATE_GET_COMPENSATION_DATA,
+  BME280_STATE_COMPENSATE_HUMIDITY,
+  BME280_STATE_COMPENSATE_TEMPERATURE,
+  BME280_STATE_COMPENSATE_PRESSURE,
+  BME280_STATE_UNSET = 0xFF,
+} bme280_state_t;
+
+
+/** 
+ * \param
+ * \param
+ */
 typedef struct {
   uint8_t ctrl_hum;
   uint8_t ctrl_meas;
@@ -202,18 +222,12 @@ typedef struct {
  * Suggested settings for weather monitoring;
  * Sensor mode: force mode, 1 sample per minute;
  */
-#define BME280_DEFAULT_SETTINGS {                                     \
+#define BME280_SETTINGS_DEFAULT {                                     \
   .ctrl_hum = BME280_SETTINGS_OSRS_H_1,                               \
   .ctrl_meas = (BME280_SETTINGS_OSRS_T_1 | BME280_SETTINGS_OSRS_P_1 | \
                 BME280_SETTINGS_MODE_FORCE),                          \
   .config = 0x00,                                                     \
 }
-
-/** 
- * \param
- * \param
- */
-extern const bme280_settings_t bme280_default_settings;
 
 /** 
  * \param

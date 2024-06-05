@@ -66,12 +66,6 @@ typedef struct {
  * \param
  * \param
  */
-extern const i2c_controller_descriptor_t i2c_controller_descriptor_default;
-
-/** 
- * \param
- * \param
- */
 i2c_controller_result_t i2c_controller_init(const i2c_controller_descriptor_t *descriptor);
 
 /** 

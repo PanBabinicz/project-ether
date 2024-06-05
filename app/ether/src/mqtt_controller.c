@@ -1,7 +1,5 @@
 #include "mqtt_controller.h"
 
-mqtt_controller_descriptor_t mqtt_controller_descriptor_default = MQTT_CONTROLLER_DESCRIPTOR_DEFAULT;
-
 static void mqtt_controller_log_error_if_nonzero(const char *message, int error_code) 
 {
   const char *TAG = "MQTT_CONTROLLER_EVENT_HANDLER";
