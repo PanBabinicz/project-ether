@@ -45,4 +45,5 @@
 ## 🔌 Hardware
 
 ![Front](https://github.com/PanBabinicz/project-ether/tree/PROJECT-ETHER-REFACTOR/hardware/project-ether-front.png)
+
 ![Back](https://github.com/PanBabinicz/project-ether/tree/PROJECT-ETHER-REFACTOR/hardware/project-ether-back.png)
