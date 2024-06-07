@@ -1,6 +1,12 @@
 #include "pms7003.h"
+#include "esp_log.h"
 
 static const char *TAG = "pms7003";
+
+static uint16_t convert_to_little_endian(uint16_t data) 
+{
+  return ((data & 0x00ff) << 8 | (data & 0xff00) >> 8);
+}
 
 pms7003_result_t pms7003_frame_send(const pms7003_callback_sent_t handler, uart_port_t uart_num) 
 {
@@ -38,8 +44,14 @@ pms7003_result_t pms7003_frame_receive(const pms7003_callback_received_t handler
   for (uint8_t i = 0; i < PMS7003_FRAME_CHECK_CODE_SIZE; ++i) {
     calculated_check_code += frame->buffer_answer[i];
   }
-  
-  if (calculated_check_code == frame->check_code) {
+
+#if defined(DEBUG)
+  ESP_LOG_BUFFER_HEXDUMP(TAG, frame->buffer_answer, PMS7003_FRAME_ANSWER_SIZE, ESP_LOG_INFO);
+  ESP_LOGI(TAG, "calculated: 0x%x", calculated_check_code);
+  ESP_LOGI(TAG, "real: 0x%x", convert_to_little_endian(frame->check_code));
+#endif
+
+  if (calculated_check_code == convert_to_little_endian(frame->check_code)) {
     return PMS7003_RESULT_SUCCESS;
   } else {
     return PMS7003_RESULT_WRONG_CHECK_CODE;

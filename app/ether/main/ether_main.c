@@ -1,4 +1,5 @@
 #include "ether.h"
+#include "state_machine.h"
 
 const TickType_t ether_delay_60s    = pdMS_TO_TICKS(60000);
 const TickType_t ether_delay_30s    = pdMS_TO_TICKS(30000);
@@ -111,71 +112,46 @@ void ether_bme280_task(void *arg)
   }
 
   ether_t *ether = arg;
-  uint8_t data, retry;
+  uint8_t retry = 0;
   bme280_result_t result;
 
   ether->state_machine.bme280 = BME280_STATE_RESET;
 
-  data = retry = 0;
   while (1) {
     xSemaphoreTake(ether_bme280_semaphore, portMAX_DELAY);
 
-    while (ether->state_machine.bme280 != BME280_STATE_UNSET) {
-      ESP_LOGI(BME280_TASK_TAG, "STATE: %d", ether->state_machine.bme280);
-      if (retry > 5) {
-        retry = 0;
-        ether->state_machine.bme280 = BME280_STATE_RESET;
-
-        /* Break the loop. */
-        break;
-      }
-
+    while ((ether->state_machine.bme280 != BME280_STATE_UNSET) && (retry < 5)) {
       switch (ether->state_machine.bme280) {
         case BME280_STATE_RESET: {
-          result = bme280_reset(ether->descriptor.i2c_controller.i2c_num);
+          result = state_machine_bme280_reset(ether);
           if (result != BME280_RESULT_SUCCESS) {
             ++retry;
-            break;
           }
-          ether->state_machine.bme280 = BME280_STATE_INIT;
           break;
         }
         case BME280_STATE_INIT: {
-          result = bme280_init(ether->descriptor.i2c_controller.i2c_num, &ether->settings.bme280);
+          result = state_machine_bme280_init(ether);
           if (result != BME280_RESULT_SUCCESS) {
             ++retry;
-            break;
           }
-          ether->state_machine.bme280 = BME280_STATE_ID;
           break;
         }
         case BME280_STATE_ID: {
-          result = bme280_id(ether->descriptor.i2c_controller.i2c_num, &data, sizeof(data));
+          result = state_machine_bme280_id(ether);
           if (result != BME280_RESULT_SUCCESS) {
             ++retry;
-            break;
           }
-
-          if (data != BME280_DATA_ID) {
-            ESP_LOGI(BME280_TASK_TAG, "The id is not valid!\n\rClosing bme280 task...\n\r");
-            ether->state_machine.bme280 = BME280_STATE_RESET;
-            break;
-          }
-          ether->state_machine.bme280 = BME280_STATE_GET_COMPENSATION_DATA;
           break;
         }
         case BME280_STATE_GET_COMPENSATION_DATA: {
-          result = bme280_get_compensation_data(ether->descriptor.i2c_controller.i2c_num, 
-                                                &ether->measurements.bme280.compensator);
+          result = state_machine_bme280_get_compensation_data(ether);
           if (result != BME280_RESULT_SUCCESS) {
             ++retry;
-            break;
           }
-          ether->state_machine.bme280 = BME280_STATE_FORCE_MODE;
           break;
         }
         case BME280_STATE_FORCE_MODE: {
-          result = bme280_force_mode(ether->descriptor.i2c_controller.i2c_num, &ether->settings.bme280);
+          result = state_machine_bme280_force_mode(ether);
           if (result != BME280_RESULT_SUCCESS) {
             ++retry;
             break;
@@ -189,67 +165,48 @@ void ether_bme280_task(void *arg)
            * time_measure[max_in_ms] = 9.3ms
            */
           vTaskDelay(ether_delay_15ms);
-          ether->state_machine.bme280 = BME280_STATE_MEASURE_HUMIDITY;
           break;
         }
         case BME280_STATE_MEASURE_HUMIDITY: {
-          result = bme280_measure_humidity(ether->descriptor.i2c_controller.i2c_num, 
-                                           &ether->measurements.bme280.humidity);
+          result = state_machine_bme280_measure_humidity(ether);
           if (result != BME280_RESULT_SUCCESS) {
             ++retry;
-            break;
           }
-          ether->state_machine.bme280 = BME280_STATE_MEASURE_TEMPERATURE;
           break;
         }
         case BME280_STATE_MEASURE_TEMPERATURE: {
-          result = bme280_measure_temperature(ether->descriptor.i2c_controller.i2c_num, 
-                                              &ether->measurements.bme280.temperature);
+          result = state_machine_bme280_measure_temperature(ether);
           if (result != BME280_RESULT_SUCCESS) {
             ++retry;
-            break;
           }
-          ether->state_machine.bme280 = BME280_STATE_MEASURE_PRESSURE;
           break;
         }
         case BME280_STATE_MEASURE_PRESSURE: {
-          result = bme280_measure_pressure(ether->descriptor.i2c_controller.i2c_num, 
-                                           &ether->measurements.bme280.pressure);
+          result = state_machine_bme280_measure_pressure(ether);
           if (result != BME280_RESULT_SUCCESS) {
             ++retry;
-            break;
           }
-          ether->state_machine.bme280 = BME280_STATE_COMPENSATE_HUMIDITY;
           break;
         }
         case BME280_STATE_COMPENSATE_HUMIDITY: {
-          result = bme280_compensate_humidity(&ether->measurements.bme280.compensator, 
-                                              &ether->measurements.bme280.humidity);
+          result = state_machine_bme280_compensate_humidity(ether);
           if (result != BME280_RESULT_SUCCESS) {
             ++retry;
-            break;
           }
-          ether->state_machine.bme280 = BME280_STATE_COMPENSATE_TEMPERATURE;
           break;
         }
         case BME280_STATE_COMPENSATE_TEMPERATURE: {
-          result = bme280_compensate_temperature(&ether->measurements.bme280.compensator, 
-                                                 &ether->measurements.bme280.temperature);
+          result = state_machine_bme280_compensate_temperature(ether);
           if (result != BME280_RESULT_SUCCESS) {
             ++retry;
-            break;
           }
-          ether->state_machine.bme280 = BME280_STATE_COMPENSATE_PRESSURE;
           break;
         }
         case BME280_STATE_COMPENSATE_PRESSURE: {
-          result = bme280_compensate_pressure(&ether->measurements.bme280.compensator, 
-                                              &ether->measurements.bme280.pressure);
+          result = state_machine_bme280_compensate_pressure(ether);
           if (result != BME280_RESULT_SUCCESS) {
             ++retry;
-            break;
           }
-          ether->state_machine.bme280 = BME280_STATE_UNSET;
           break;
         }
         default: {
@@ -293,101 +250,119 @@ void ether_pms7003_task(void *arg)
   while (1) {
     xSemaphoreTake(ether_pms7003_semaphore, portMAX_DELAY);
     
-    while (ether->state_machine.pms7003 != PMS7003_STATE_UNSET) {
-      ESP_LOGI(PMS7003_TASK_TAG, "STATE: %d", ether->state_machine.pms7003);
-      if (retry > 50) {
-        retry = 0;
-        ether->state_machine.pms7003 = PMS7003_STATE_CHANGE_MODE_PASSIVE;
-
-        /* Break the loop. */
-        break;
-      }
-
-      // vTaskDelay(ether_delay_500ms);
-
+    while ((ether->state_machine.pms7003 != PMS7003_STATE_UNSET) && (retry < 5)) {
       switch (ether->state_machine.pms7003) {
         case PMS7003_STATE_CHANGE_MODE_PASSIVE: {
-          ESP_LOGI(PMS7003_TASK_TAG, "PMS7003_STATE_CHANGE_MODE_PASSIVE");
           result = pms7003_frame_send(&pms7003_change_mode_passive,
                                       ether->descriptor.uart_controller.uart_port);
-          ESP_LOGI(PMS7003_TASK_TAG, "result: %d", result);
-          // if (result != PMS7003_RESULT_SUCCESS) {
-          //   ++retry;
-          //   break;
-          // }
+
+#if defined(ETHER_DEBUG)
+          ESP_LOGI(PMS7003_TASK_TAG, "PMS7003_STATE_CHANGE_MODE_PASSIVE");
+          ESP_LOGI(PMS7003_TASK_TAG, "RESULT: %d", result);
+#endif
+
+          if (result != PMS7003_RESULT_SUCCESS) {
+            ++retry;
+            break;
+          }
+
           ether->state_machine.pms7003 = PMS7003_STATE_WAKEUP;
           vTaskDelay(ether_delay_500ms);
           break;
         }
         case PMS7003_STATE_CHANGE_MODE_ACTIVE: {
-          ESP_LOGI(PMS7003_TASK_TAG, "PMS7003_STATE_CHANGE_MODE_ACTIVE");
           result = pms7003_frame_send(&pms7003_change_mode_active,
                                       ether->descriptor.uart_controller.uart_port);
-          ESP_LOGI(PMS7003_TASK_TAG, "result: %d", result);
-          // if (result != PMS7003_RESULT_SUCCESS) {
-          //   ++retry;
-          //   break;
-          // }
+
+#if defined(ETHER_DEBUG)
+          ESP_LOGI(PMS7003_TASK_TAG, "PMS7003_STATE_CHANGE_MODE_ACTIVE");
+          ESP_LOGI(PMS7003_TASK_TAG, "RESULT: %d", result);
+#endif
+          if (result != PMS7003_RESULT_SUCCESS) {
+            ++retry;
+            break;
+          }
+
           ether->state_machine.pms7003 = PMS7003_STATE_WAKEUP;
           vTaskDelay(ether_delay_500ms);
           break;
         }
         case PMS7003_STATE_WAKEUP: {
-          ESP_LOGI(PMS7003_TASK_TAG, "PMS7003_STATE_WAKEUP");
           result = pms7003_frame_send(&pms7003_wakeup, ether->descriptor.uart_controller.uart_port);
-          ESP_LOGI(PMS7003_TASK_TAG, "result: %d", result);
-          // if (result != PMS7003_RESULT_SUCCESS) {
-          //   ++retry;
-          //   break;
-          // }
+
+#if defined(ETHER_DEBUG)
+          ESP_LOGI(PMS7003_TASK_TAG, "PMS7003_STATE_WAKEUP");
+          ESP_LOGI(PMS7003_TASK_TAG, "RESULT: %d", result);
+#endif
+          if (result != PMS7003_RESULT_SUCCESS) {
+            ++retry;
+            break;
+          }
+
           ether->state_machine.pms7003 = PMS7003_STATE_READ_REQUEST;
           /* Wait at least 30s to get stable data. */
           vTaskDelay(ether_delay_30s);
           break;
         }
         case PMS7003_STATE_READ_REQUEST: {
-          ESP_LOGI(PMS7003_TASK_TAG, "PMS7003_STATE_READ_REQUEST");
           for (uint8_t i = 0; i < 5; i++) {
-            /* Avoid getting not stable data. */
+            /* Avoid getting unstable data. */
             uart_flush(ether->descriptor.uart_controller.uart_port);
             result = pms7003_frame_send(&pms7003_read_request, ether->descriptor.uart_controller.uart_port);
-            ESP_LOGI(PMS7003_TASK_TAG, "result: %d", result);
             vTaskDelay(ether_delay_500ms);
           }
 
-          // if (result != PMS7003_RESULT_SUCCESS) {
-          //   ++retry;
-          //   break;
-          // }
+#if defined(ETHER_DEBUG)
+          ESP_LOGI(PMS7003_TASK_TAG, "PMS7003_STATE_READ_REQUEST");
+          ESP_LOGI(PMS7003_TASK_TAG, "RESULT: %d", result);
+#endif
+
+          if (result != PMS7003_RESULT_SUCCESS) {
+            ++retry;
+            break;
+          }
+
           ether->state_machine.pms7003 = PMS7003_STATE_READ;
           break;
         }
         case PMS7003_STATE_READ: {
-          ESP_LOGI(PMS7003_TASK_TAG, "PMS7003_STATE_READ");
           result = pms7003_frame_receive(&pms7003_read, ether->descriptor.uart_controller.uart_port, &frame);
-          ESP_LOGI(PMS7003_TASK_TAG, "result: %d", result);
-          // if (result != PMS7003_RESULT_SUCCESS) {
-          //   ++retry;
-          //   break;
-          // }
+
+#if defined(ETHER_DEBUG)
+          ESP_LOGI(PMS7003_TASK_TAG, "PMS7003_STATE_READ");
+          ESP_LOGI(PMS7003_TASK_TAG, "RESULT: %d", result);
+#endif
+
+          if (result != PMS7003_RESULT_SUCCESS) {
+            ++retry;
+            break;
+          }
+
           ether->state_machine.pms7003 = PMS7003_STATE_SLEEP;
           vTaskDelay(ether_delay_500ms);
           break;
         }
         case PMS7003_STATE_SLEEP: {
-          ESP_LOGI(PMS7003_TASK_TAG, "PMS7003_STATE_SLEEP");
           result = pms7003_frame_send(&pms7003_sleep, ether->descriptor.uart_controller.uart_port);
-          ESP_LOGI(PMS7003_TASK_TAG, "result: %d", result);
-          // if (result != PMS7003_RESULT_SUCCESS) {
-          //   ++retry;
-          //   break;
-          // }
+
+#if defined(ETHER_DEBUG)
+          ESP_LOGI(PMS7003_TASK_TAG, "PMS7003_STATE_SLEEP");
+          ESP_LOGI(PMS7003_TASK_TAG, "RESULT: %d", result);
+#endif
+
+          if (result != PMS7003_RESULT_SUCCESS) {
+            ++retry;
+            break;
+          }
+
           ether->state_machine.pms7003 = PMS7003_STATE_UNSET;
           vTaskDelay(ether_delay_500ms);
           break;
         }
         default: {
+#if defined(ETHER_DEBUG)
           ESP_LOGI(PMS7003_TASK_TAG, "default");
+#endif
           ether->state_machine.pms7003 = PMS7003_STATE_UNSET;
           vTaskDelay(ether_delay_500ms);
           break;

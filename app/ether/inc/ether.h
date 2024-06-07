@@ -53,23 +53,6 @@ typedef struct {
   ether_state_machine_t state_machine;
 } ether_t;
 
-// extern const TickType_t ether_delay_60s;
-// extern const TickType_t ether_delay_30s;
-// extern const TickType_t ether_delay_10s;
-// extern const TickType_t ether_delay_1s;
-// extern const TickType_t ether_delay_500ms;
-// extern const TickType_t ether_delay_200ms;
-// extern const TickType_t ether_delay_15ms;
-//
-// extern SemaphoreHandle_t ether_pms7003_semaphore;
-// extern SemaphoreHandle_t ether_mqtt_semaphore;
-// extern SemaphoreHandle_t ether_bme280_semaphore;
-
 ether_result_t ether_init(ether_t *ether);
-
-// void ether_run(void);
-// void ether_mqtt_task(void *arg);
-// void ether_bme280_task(void *arg);
-// void ether_pms7003_task(void *arg);
 
 #endif // !INC_ETHER_H

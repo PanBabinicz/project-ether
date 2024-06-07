@@ -8,6 +8,7 @@ idf_component_register(
     "../src/wifi_controller.c"
     "../src/mqtt_controller.c"
     "../src/ether.c"
+    "../src/state_machine.c"
   INCLUDE_DIRS 
     "." 
     "../inc"
@@ -29,3 +30,5 @@ add_definitions(-DWIFI_CONTROLLER_SETTINGS_PASSWORD=${ESP32_WIFI_PASSWORD})
 
 set(ESP32_WIFI_SSID "\"$ENV{ESP32_WIFI_SSID}\"")
 add_definitions(-DWIFI_CONTROLLER_SETTINGS_SSID=${ESP32_WIFI_SSID})
+
+add_definitions(-DETHER_DEBUG=1)
