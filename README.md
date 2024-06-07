@@ -42,6 +42,6 @@
 > **Please bear in mind that the project was primarily created for enjoyment and educational endeavors.**
 
 > [!NOTE]
-> hello
+> **Please bear in mind that the project was primarily created for enjoyment and educational endeavors.**
 
 ## 🔌 Hardware
