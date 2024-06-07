@@ -29,4 +29,16 @@
 > was later debunked by advancements in physics, the term "ether" is still used metaphorically to describe the 
 > invisible medium through which radio waves travel.
 
-## 
+## ⚒️  Project goal 
+
+> ***The main goal of the project is to create a comprehensive air quality monitoring system, 
+> based on the ESP32 platform and integrated with OpenHAB and Grafana. The plan involves the development of 
+> a dedicated hardware device equipped with ESP32, appropriate sensors measuring carbon dioxide, temperature, and humidity, 
+> as well as a power supply unit. Additionally, the project envisages the use of the MQTT protocol,
+> enabling efficient communication between devices, ensuring fast and reliable transmission of sensor data to the server.
+> OpenHAB and Grafana will be deployed on the Raspberry Pi platform.***
+>
+> [!NOTE] 
+> **Please bear in mind that the project was primarily created for enjoyment and educational endeavors.**
+
+## 🔌 Hardware
