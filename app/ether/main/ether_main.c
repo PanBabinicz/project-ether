@@ -62,10 +62,6 @@ static void create_mqtt_message(const ether_t *ether, char *mqtt_message)
 /* END OF STATIC FUNCTIONS                                                   */
 ///////////////////////////////////////////////////////////////////////////////
 
-void ether_run(void)
-{
-}
-
 void ether_mqtt_task(void *arg)
 {
   
