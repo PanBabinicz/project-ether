@@ -38,10 +38,11 @@
 > enabling efficient communication between devices, ensuring fast and reliable transmission of sensor data to the server.
 > OpenHAB and Grafana will be deployed on the Raspberry Pi platform.***
 >
-> [!NOTE] 
-> **Please bear in mind that the project was primarily created for enjoyment and educational endeavors.**
 
 > [!NOTE]
 > **Please bear in mind that the project was primarily created for enjoyment and educational endeavors.**
 
 ## 🔌 Hardware
+
+![Front](https://github.com/PanBabinicz/project-ether/tree/PROJECT-ETHER-REFACTOR/hardware/project-ether-front.png)
+![Back](https://github.com/PanBabinicz/project-ether/tree/PROJECT-ETHER-REFACTOR/hardware/project-ether-back.png)
