@@ -82,14 +82,22 @@ void ether_mqtt_task(void *arg)
   while (1) {
     xSemaphoreTake(ether_mqtt_semaphore, portMAX_DELAY);
 
+#if defined(ETHER_DEBUG)
     ESP_LOGI(MQTT_TASK_TAG, "create data:");
+#endif
+
     create_mqtt_message(ether, mqtt_message);
 
+#if defined(ETHER_DEBUG)
     ESP_LOGI(MQTT_TASK_TAG, "send data:");
+#endif
+
     result = esp_mqtt_client_publish(ether->descriptor.mqtt_controller.client_handle, 
                                      mqtt_topic, mqtt_message, 0, 0, 0);
 
+#if defined(ETHER_DEBUG)
     ESP_LOGI(MQTT_TASK_TAG, "result: %d", result);
+#endif
 
     vTaskDelay(ether_delay_60s);
     xSemaphoreGive(ether_pms7003_semaphore);

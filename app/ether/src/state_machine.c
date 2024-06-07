@@ -42,7 +42,7 @@ bme280_result_t state_machine_bme280_reset(ether_t *ether)
     return BME280_RESULT_ERROR;
   }
 
-  ether->state_machine.bme280 = BME280_STATE_ID;
+  ether->state_machine.bme280 = BME280_STATE_INIT;
 
   return BME280_RESULT_SUCCESS;
 }
