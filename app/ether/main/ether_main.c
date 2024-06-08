@@ -50,9 +50,9 @@ static void create_mqtt_message(const ether_t *ether, char *mqtt_message)
 
   snprintf(mqtt_message, MQTT_CONTROLLER_MESSAGE_MAX_SIZE, 
            "ether measurements:\n\rpm1 = %d\n\rpm2.5 = %d\n\rpm10 = %d\n\rtemp = %f\n\rhum = %f\n\rpress = %f\n\r", 
-           convert_to_little_endian(ether->measurements.pms7003.pm1), 
-           convert_to_little_endian(ether->measurements.pms7003.pm25), 
-           convert_to_little_endian(ether->measurements.pms7003.pm10),
+           ether->measurements.pms7003.pm1, 
+           ether->measurements.pms7003.pm25, 
+           ether->measurements.pms7003.pm10,
            ether->measurements.bme280.temperature.compensated,
            ether->measurements.bme280.humidity.compensated,
            ether->measurements.bme280.pressure.compensated);
@@ -223,9 +223,11 @@ void ether_bme280_task(void *arg)
     ether->state_machine.bme280 = BME280_STATE_FORCE_MODE;
     retry = 0;
 
+#if defined(ETHER_DEBUG)
     ESP_LOGI(BME280_TASK_TAG, "humidity = %f", ether->measurements.bme280.humidity.compensated);
     ESP_LOGI(BME280_TASK_TAG, "pressure = %f", ether->measurements.bme280.pressure.compensated);
     ESP_LOGI(BME280_TASK_TAG, "temperature = %f\n\r", ether->measurements.bme280.temperature.compensated);
+#endif
 
     vTaskDelay(ether_delay_500ms);
 
@@ -374,9 +376,9 @@ void ether_pms7003_task(void *arg)
       }
     }
     
-    ether->measurements.pms7003.pm1   = frame.data_pm1_standard;
-    ether->measurements.pms7003.pm25  = frame.data_pm25_standard;
-    ether->measurements.pms7003.pm10  = frame.data_pm10_standard;
+    ether->measurements.pms7003.pm1   = convert_to_little_endian(frame.data_pm1_standard);
+    ether->measurements.pms7003.pm25  = convert_to_little_endian(frame.data_pm25_standard);
+    ether->measurements.pms7003.pm10  = convert_to_little_endian(frame.data_pm10_standard);
 
     ether->state_machine.pms7003 = PMS7003_STATE_WAKEUP;
 
