@@ -18,98 +18,91 @@
 #define PMS7003_UART_WAIT_TIMEOUT_MS  (0x64)
 
 /** 
- * \param
- * \param
+ * \brief Union representing a PMS7003 frame request.
  */
 typedef union {
   struct {
-    const uint8_t start_byte_1;
-    const uint8_t start_byte_2;
-    uint8_t command;
-    uint8_t data_h;
-    uint8_t data_l;
+    const uint8_t start_byte_1;                         /*!< Start byte 1. */
+    const uint8_t start_byte_2;                         /*!< Start byte 2. */
+    uint8_t command;                                    /*!< Command byte. */
+    uint8_t data_h;                                     /*!< Data high byte. */
+    uint8_t data_l;                                     /*!< Data low byte. */
+    uint8_t lrch;                                       /*!< High byte of the checksum. */
+    uint8_t lrcl;                                       /*!< Low byte of the checksum. */
     /* Verify bytes: add all the bytes except verify bytes. */
-    uint8_t lrch;     
-    uint8_t lrcl;
-  } __attribute__((packed));  // Ensure no padding between members
-  uint8_t buffer_request[PMS7003_FRAME_REQUEST_SIZE];
+  } __attribute__((packed));  /* Ensure no padding between members. */
+  uint8_t buffer_request[PMS7003_FRAME_REQUEST_SIZE];   /*!< Buffer for request frame. */
 } pms7003_frame_request_t;
 
 /** 
- * \param
- * \param
+ * \brief Union representing a PMS7003 frame answer.
  */
 typedef union {
   struct {
-    uint8_t start_byte_1;
-    uint8_t start_byte_2;
-    uint16_t length;
-    uint16_t data_pm1_standard;
-    uint16_t data_pm25_standard;
-    uint16_t data_pm10_standard;
-    uint16_t data_pm1_atmospheric;
-    uint16_t data_pm25_atmospheric;
-    uint16_t data_concentration_unit;
-    uint16_t data_particles_300nm;
-    uint16_t data_particles_500nm;
-    uint16_t data_particles_1000nm;
-    uint16_t data_particles_2500nm;
-    uint16_t data_particles_5000nm;
-    uint16_t data_particles_10000nm;
-    uint16_t reserved;
-    uint16_t check_code;
-  } __attribute__((packed));  // Ensure no padding between members
-  uint8_t buffer_answer[PMS7003_FRAME_ANSWER_SIZE];
+    uint8_t start_byte_1;                             /*!< Start byte 1. */
+    uint8_t start_byte_2;                             /*!< Start byte 2. */
+    uint16_t length;                                  /*!< Length of the frame. */
+    uint16_t data_pm1_standard;                       /*!< PM1.0 concentration (standard particles). */
+    uint16_t data_pm25_standard;                      /*!< PM2.5 concentration (standard particles). */
+    uint16_t data_pm10_standard;                      /*!< PM10 concentration (standard particles). */
+    uint16_t data_pm1_atmospheric;                    /*!< PM1.0 concentration (atmospheric particles). */
+    uint16_t data_pm25_atmospheric;                   /*!< PM2.5 concentration (atmospheric particles). */
+    uint16_t data_concentration_unit;                 /*!< Concentration unit. */
+    uint16_t data_particles_300nm;                    /*!< Particles count for 0.3µm. */
+    uint16_t data_particles_500nm;                    /*!< Particles count for 0.5µm. */
+    uint16_t data_particles_1000nm;                   /*!< Particles count for 1.0µm. */
+    uint16_t data_particles_2500nm;                   /*!< Particles count for 2.5µm. */
+    uint16_t data_particles_5000nm;                   /*!< Particles count for 5.0µm. */
+    uint16_t data_particles_10000nm;                  /*!< Particles count for 10µm. */
+    uint16_t reserved;                                /*!< Reserved bytes. */
+    uint16_t check_code;                              /*!< Checksum code. */
+  } __attribute__((packed));  /* Ensure no padding between members. */
+  uint8_t buffer_answer[PMS7003_FRAME_ANSWER_SIZE];   /*!< Buffer for answer frame. */
 } pms7003_frame_answer_t;
 
 /** 
- * \param
- * \param
+ * \brief Structure representing PMS7003 measurements.
  */
 typedef struct {
-  uint16_t pm1;
-  uint16_t pm25;
-  uint16_t pm10;
+  uint16_t pm1;             /*!< PM1.0 measurement. */
+  uint16_t pm25;            /*!< PM2.5 measurement. */
+  uint16_t pm10;            /*!< PM10 measurement. */
 } pms7003_measurements_t;
 
 /** 
- * \param
- * \param
+ * \brief Result codes for PMS7003 sensor operations.
  */
 typedef enum {
-  PMS7003_RESULT_SUCCESS = 0,
-  PMS7003_RESULT_ERROR,
-  PMS7003_RESULT_PARTIAL_SENT,
-  PMS7003_RESULT_PARTIAL_RECEIVED,
-  PMS7003_RESULT_WRONG_CHECK_CODE,
+  PMS7003_RESULT_SUCCESS = 0,         /*!< Operation was successful. */
+  PMS7003_RESULT_ERROR,               /*!< Operation encountered an error. */
+  PMS7003_RESULT_PARTIAL_SENT,        /*!< Partial data sent. */
+  PMS7003_RESULT_PARTIAL_RECEIVED,    /*!< Partial data received. */
+  PMS7003_RESULT_WRONG_CHECK_CODE,    /*!< Wrong checksum. */
 } pms7003_result_t;
 
 /** 
- * \param
- * \param
+ * \brief Status codes for PMS7003 sensor.
  */
 typedef enum {
-  PMS7003_STATUS_OK = 0,
-  PMS7003_STATUS_READY,
+  PMS7003_STATUS_OK = 0,    /*!< Status OK. */
+  PMS7003_STATUS_READY,     /*!< Status Ready. */
 } pms7003_status_t;
 
 /** 
- * \param
- * \param
+ * \brief States of the PMS7003 sensor.
  */
 typedef enum {
-  PMS7003_STATE_READ_REQUEST = 0,
-  PMS7003_STATE_CHANGE_MODE_PASSIVE,
-  PMS7003_STATE_CHANGE_MODE_ACTIVE,
-  PMS7003_STATE_SLEEP,
-  PMS7003_STATE_WAKEUP,
-  PMS7003_STATE_READ,
-  PMS7003_STATE_UNSET = 0xFF,
+  PMS7003_STATE_READ_REQUEST = 0,       /*!< Read request state. */
+  PMS7003_STATE_CHANGE_MODE_PASSIVE,    /*!< Change to passive mode state. */
+  PMS7003_STATE_CHANGE_MODE_ACTIVE,     /*!< Change to active mode state. */
+  PMS7003_STATE_SLEEP,                  /*!< Sleep state. */
+  PMS7003_STATE_WAKEUP,                 /*!< Wakeup state. */
+  PMS7003_STATE_READ,                   /*!< Read state. */
+  PMS7003_STATE_UNSET = 0xFF,           /*!< Unset state. */
 } pms7003_state_t;
 
 /** 
- * \param
- * \param
+ * \brief Default frame for reading PMS7003 sensor data.
  */
 #define PMS7003_FRAME_READ {                  \
   .start_byte_1 = PMS7003_START_CHARACTER_1,  \
@@ -122,8 +115,7 @@ typedef enum {
 } 
 
 /** 
- * \param
- * \param
+ * \brief Default frame for changing PMS7003 sensor mode to passive.
  */
 #define PMS7003_FRAME_CHANGE_MODE_PASSIVE {   \
   .start_byte_1 = PMS7003_START_CHARACTER_1,  \
@@ -136,8 +128,7 @@ typedef enum {
 } 
 
 /** 
- * \param
- * \param
+ * \brief Default frame for changing PMS7003 sensor mode to active.
  */
 #define PMS7003_FRAME_CHANGE_MODE_ACTIVE {    \
   .start_byte_1 = PMS7003_START_CHARACTER_1,  \
@@ -150,8 +141,7 @@ typedef enum {
 } 
 
 /** 
- * \param
- * \param
+ * \brief Default frame for putting PMS7003 sensor to sleep.
  */
 #define PMS7003_FRAME_SLEEP {                 \
   .start_byte_1 = PMS7003_START_CHARACTER_1,  \
@@ -164,8 +154,7 @@ typedef enum {
 } 
 
 /** 
- * \param
- * \param
+ * \brief Default frame for waking PMS7003 sensor up.
  */
 #define PMS7003_FRAME_WAKEUP {                \
   .start_byte_1 = PMS7003_START_CHARACTER_1,  \
@@ -178,63 +167,88 @@ typedef enum {
 } 
 
 /** 
- * \param
- * \param
+ * \brief Callback function type for handling sent frames.
+ * 
+ * \param[in]   uart_num: UART port number.
+ * \return      Status code of the operation.
  */
 typedef int32_t (*pms7003_callback_sent_t)(uart_port_t);
 
 /** 
- * \param
- * \param
+ * \brief Callback function type for handling received frames.
+ * 
+ * \param[in]   uart_num: UART port number.
+ * \param[out]  frame: Pointer to the frame answer structure.
+ * \return      Status code of the operation.
  */
 typedef int32_t (*pms7003_callback_received_t)(uart_port_t, pms7003_frame_answer_t *);
 
 /** 
- * \param
- * \param
+ * \brief Send a PMS7003 frame.
+ * 
+ * \param[in]   handler: Callback function to handle the sent frame.
+ * \param[in]   uart_num: UART port number.
+ * \return      Result of the send operation.
  */
 pms7003_result_t pms7003_frame_send(const pms7003_callback_sent_t handler, uart_port_t uart_num);
 
 /** 
- * \param
- * \param
+ * \brief Receive a PMS7003 frame.
+ * 
+ * \param[in]   handler: Callback function to handle the received frame.
+ * \param[in]   uart_num: UART port number.
+ * \param[out]  frame: Pointer to the frame answer structure.
+ * \return      Result of the receive operation.
  */
 pms7003_result_t pms7003_frame_receive(const pms7003_callback_received_t handler, 
                                        uart_port_t uart_num, pms7003_frame_answer_t *frame);
 
 /** 
- * \param
- * \param
+ * \brief Send a read request to the PMS7003 sensor.
+ * 
+ * \param[in]   uart_num: UART port number.
+ * \return      Status code of the operation.
  */
 int32_t pms7003_read_request(uart_port_t uart_num);
 
 /** 
- * \param
- * \param
+ * \brief Change the PMS7003 mode to passive.
+ * 
+ * \param[in]   uart_num: UART port number.
+ * \return      Status code of the operation.
  */
 int32_t pms7003_change_mode_passive(uart_port_t uart_num);
 
 /** 
- * \param
- * \param
+ * \brief Change the PMS7003 mode to active.
+ * 
+ * \param[in]   uart_num: UART port number.
+ * \return      Status code of the operation.
  */
 int32_t pms7003_change_mode_active(uart_port_t uart_num);
 
 /** 
- * \param
- * \param
+ * \brief Put the PMS7003 sensor to sleep.
+ * 
+ * \param[in]   uart_num: UART port number.
+ * \return      Status code of the operation.
  */
 int32_t pms7003_sleep(uart_port_t uart_num);
 
 /** 
- * \param
- * \param
+ * \brief Wake the PMS7003 sensor up.
+ * 
+ * \param[in]   uart_num: UART port number.
+ * \return      Status code of the operation.
  */
 int32_t pms7003_wakeup(uart_port_t uart_num);
 
 /** 
- * \param
- * \param
+ * \brief Read data from the PMS7003 sensor.
+ * 
+ * \param[in]   uart_num: UART port number.
+ * \param[out]  frame: Pointer to the frame answer structure.
+ * \return      Status code of the operation.
  */
 int32_t pms7003_read(uart_port_t uart_num, pms7003_frame_answer_t *frame);
 
