@@ -19,32 +19,33 @@
 #define WIFI_CONTROLLER_RETRY_MAX (0x05)
 
 /** 
- * \param
- * \param
+ * \brief Result codes for WIFI controller operations.
  */
 typedef enum {
-  WIFI_CONTROLLER_RESULT_SUCCESS = 0,
-  WIFI_CONTROLLER_RESULT_ERROR,
+  WIFI_CONTROLLER_RESULT_SUCCESS = 0,   /*!< Operation was successful. */
+  WIFI_CONTROLLER_RESULT_ERROR,         /*!< Operation encountered an error. */
 } wifi_controller_result_t;
 
 /** 
- * \param
- * \param
+ * \brief Function pointer type for WIFI event handler.
+ * 
+ * \param[in]   arg: Pointer to user-defined data.
+ * \param[in]   event_base: Base ID of the event.
+ * \param[in]   event_id: ID of the event.
+ * \param[in]   event_data: Pointer to event-specific data.
  */
 typedef void (*wifi_controller_event_handler_t)(void *, esp_event_base_t, int32_t, void *);
 
 /** 
- * \param
- * \param
+ * \brief Structure for WIFI controller descriptor.
  */
 typedef struct {
-  wifi_config_t wifi_config;
-  wifi_controller_event_handler_t event_handler;
+  wifi_config_t wifi_config;                        /*!< WIFI configuration. */
+  wifi_controller_event_handler_t event_handler;    /*!< WIFI event handler. */
 } wifi_controller_descriptor_t;
 
-/** 
- * \param
- * \param
+/**
+ * \brief Default WiFi controller configuration and descriptor if SSID and password are defined.
  */
 #if defined (WIFI_CONTROLLER_SETTINGS_SSID) && defined (WIFI_CONTROLLER_SETTINGS_PASSWORD)
   #define WIFI_CONTROLLER_CONFIG_DEFAULT  {           \
@@ -61,15 +62,21 @@ typedef struct {
 #endif
 
 /** 
- * \param
- * \param
+ * \brief Event handler for WiFi events.
+ * 
+ * \param[in]   arg: Pointer to user-defined data.
+ * \param[in]   event_base: Base ID of the event.
+ * \param[in]   event_id: ID of the event.
+ * \param[in]   event_data: Pointer to event-specific data.
  */
 void wifi_controller_event_handler(void *arg, esp_event_base_t event_base, 
                                    int32_t event_id, void *event_data);
 
 /** 
- * \param
- * \param
+ * \brief Initialize the WiFi controller.
+ * 
+ * \param[in]   wifi_controller_descriptor: Pointer to the WiFi controller descriptor.
+ * \return      Result of the initialization operation.
  */
 wifi_controller_result_t wifi_controller_init(const wifi_controller_descriptor_t *wifi_controller_descriptor);
 

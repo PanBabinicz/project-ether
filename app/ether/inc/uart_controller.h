@@ -7,31 +7,28 @@
 #include "hal/gpio_types.h"
 #include "hal/uart_types.h"
 
-/** 
- * \param
- * \param
- */
-typedef enum {
-  UART_CONTROLLER_RESULT_SUCCESS = 0,
-  UART_CONTROLLER_RESULT_ERROR,
-} uart_controller_result_t;
-
-/** 
- * \param
- * \param
- */
-typedef struct {
-  uart_config_t uart_config;
-  uart_port_t uart_port;
-} uart_controller_descriptor_t;
-
 #define UART_CONTROLLER_RX_BUF_SIZE (1024)
 #define UART_CONTROLLER_TX_PIN      (GPIO_NUM_17)
 #define UART_CONTROLLER_RX_PIN      (GPIO_NUM_16)
 
 /** 
- * \param
- * \param
+ * \brief Result codes for UART controller operations.
+ */
+typedef enum {
+  UART_CONTROLLER_RESULT_SUCCESS = 0,   /*!< Operation was successful. */
+  UART_CONTROLLER_RESULT_ERROR,         /*!< Operation encountered an error. */
+} uart_controller_result_t;
+
+/** 
+ * \brief Structure for UART controller descriptor.
+ */
+typedef struct {
+  uart_config_t uart_config;      /*!< UART configuration. */
+  uart_port_t uart_port;          /*!< UART port number. */
+} uart_controller_descriptor_t;
+
+/** 
+ * \brief Default configuration for the UART controller.
  */
 #define UART_CONTROLLER_CONFIG_DEFAULT  { \
   .baud_rate = 9600,                      \
@@ -43,8 +40,7 @@ typedef struct {
 }
 
 /** 
- * \param
- * \param
+ * \brief Default descriptor for the UART controller.
  */
 #define UART_CONTROLLER_DESCRIPTOR_DEFAULT  {     \
   .uart_config = UART_CONTROLLER_CONFIG_DEFAULT,  \
@@ -52,8 +48,10 @@ typedef struct {
 }
 
 /** 
- * \param
- * \param
+ * \brief Initialize the UART controller.
+ * 
+ * \param[in]   uart_controller_descriptor: Pointer to the UART controller descriptor.
+ * \return      Result of the initialization operation.
  */
 uart_controller_result_t uart_controller_init(const uart_controller_descriptor_t *uart_controller_descriptor);
 
