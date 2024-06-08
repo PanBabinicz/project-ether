@@ -103,119 +103,101 @@
 #define BME280_SIZE_COMP  (0x21)
 
 /** 
- * \param
- * \param
+ * \brief Result codes for BME280 sensor operations.
  */
 typedef enum {
-  BME280_RESULT_SUCCESS = 0,
-  BME280_RESULT_ERROR,
+  BME280_RESULT_SUCCESS = 0,  /*!< Operation was successful. */
+  BME280_RESULT_ERROR,        /*!< Operation encountered an error. */
 } bme280_result_t;
 
 /** 
- * \param
- * \param
+ * \brief State codes for BME280 sensor initialization and operations.
  */
 typedef enum {
-  BME280_STATUS_MEASURING = 0,
-  BME280_STATUS_IM_UPDATE,
-} bme280_status_t;
-
-/** 
- * \param
- * \param
- */
-typedef enum {
-  BME280_STATE_INIT = 0,
-  BME280_STATE_RESET,
-  BME280_STATE_ID,
-  BME280_STATE_FORCE_MODE,
-  BME280_STATE_MEASURE_HUMIDITY,
-  BME280_STATE_MEASURE_TEMPERATURE,
-  BME280_STATE_MEASURE_PRESSURE,
-  BME280_STATE_GET_COMPENSATION_DATA,
-  BME280_STATE_COMPENSATE_HUMIDITY,
-  BME280_STATE_COMPENSATE_TEMPERATURE,
-  BME280_STATE_COMPENSATE_PRESSURE,
-  BME280_STATE_UNSET = 0xFF,
+  BME280_STATE_INIT = 0,                /*!< Initial state. */
+  BME280_STATE_RESET,                   /*!< Reset state. */
+  BME280_STATE_ID,                      /*!< ID reading state. */
+  BME280_STATE_FORCE_MODE,              /*!< Force mode state. */
+  BME280_STATE_MEASURE_HUMIDITY,        /*!< Humidity measurement state. */
+  BME280_STATE_MEASURE_TEMPERATURE,     /*!< Temperature measurement state. */
+  BME280_STATE_MEASURE_PRESSURE,        /*!< Pressure measurement state. */
+  BME280_STATE_GET_COMPENSATION_DATA,   /*!< Compensation data retrieval state. */
+  BME280_STATE_COMPENSATE_HUMIDITY,     /*!< Humidity compensation state. */
+  BME280_STATE_COMPENSATE_TEMPERATURE,  /*!< Temperature compensation state. */
+  BME280_STATE_COMPENSATE_PRESSURE,     /*!< Pressure compensation state. */
+  BME280_STATE_UNSET = 0xFF,            /*!< Unset state. */
 } bme280_state_t;
 
-
 /** 
- * \param
- * \param
+ * \brief Structure for the BME280 sensor settings.
  */
 typedef struct {
-  uint8_t ctrl_hum;
-  uint8_t ctrl_meas;
-  uint8_t config;
+  uint8_t ctrl_hum;   /*!< Control humidity register value. */
+  uint8_t ctrl_meas;  /*!< Control measurement register value. */
+  uint8_t config;     /*!< Configuration register value. */
 } bme280_settings_t;
 
 /** 
- * \param
- * \param
+ * \brief Structure for the BME280 sensor pressure data.
  */
 typedef struct {
-  uint8_t msb;
-  uint8_t lsb;
-  uint8_t xlsb;
-  double  compensated;
+  uint8_t msb;          /*!< Most significant byte. */
+  uint8_t lsb;          /*!< Least significant byte. */
+  uint8_t xlsb;         /*!< Extended least significant byte. */
+  double  compensated;  /*!< Compensated pressure value. */
 } bme280_pressure_t;
 
 /** 
- * \param
- * \param
+ * \brief Structure for the BME280 sensor temperature data.
  */
 typedef struct {
-  uint8_t msb;
-  uint8_t lsb;
-  uint8_t xlsb;
-  double  compensated;
+  uint8_t msb;          /*!< Most significant byte. */
+  uint8_t lsb;          /*!< Least significant byte. */
+  uint8_t xlsb;         /*!< Extended least significant byte. */
+  double  compensated;  /*!< Compensated temperature value. */
 } bme280_temperature_t;
 
 /** 
- * \param
- * \param
+ * \brief Structure for the BME280 sensor humidity data.
  */
 typedef struct {
-  uint8_t msb;
-  uint8_t lsb;
-  double  compensated;
+  uint8_t msb;          /*!< Most significant byte. */
+  uint8_t lsb;          /*!< Least significant byte. */
+  double  compensated;  /*!< Compensated humidity value. */
 } bme280_humidity_t;
 
 /** 
- * \param
- * \param
+ * \brief Structure for the BME280 sensor compensator data.
  */
 typedef struct {
-  uint16_t  dig_t1;
-  int16_t   dig_t2;
-  int16_t   dig_t3;
-  uint16_t  dig_p1;
-  int16_t   dig_p2;
-  int16_t   dig_p3;
-  int16_t   dig_p4;
-  int16_t   dig_p5;
-  int16_t   dig_p6;
-  int16_t   dig_p7;
-  int16_t   dig_p8;
-  int16_t   dig_p9;
-  uint8_t   dig_h1;
-  int16_t   dig_h2;
-  uint8_t   dig_h3;
-  int16_t   dig_h4;
-  int16_t   dig_h5;
-  int8_t    dig_h6;
+  uint16_t  dig_t1;     /*!< Temperature compensation value T1. */
+  int16_t   dig_t2;     /*!< Temperature compensation value T2. */
+  int16_t   dig_t3;     /*!< Temperature compensation value T3. */
+  uint16_t  dig_p1;     /*!< Pressure compensation value P1. */
+  int16_t   dig_p2;     /*!< Pressure compensation value P2. */
+  int16_t   dig_p3;     /*!< Pressure compensation value P3. */
+  int16_t   dig_p4;     /*!< Pressure compensation value P4. */
+  int16_t   dig_p5;     /*!< Pressure compensation value P5. */
+  int16_t   dig_p6;     /*!< Pressure compensation value P6. */
+  int16_t   dig_p7;     /*!< Pressure compensation value P7. */
+  int16_t   dig_p8;     /*!< Pressure compensation value P8. */
+  int16_t   dig_p9;     /*!< Pressure compensation value P9. */
+  uint8_t   dig_h1;     /*!< Humidity compensation value H1. */
+  int16_t   dig_h2;     /*!< Humidity compensation value H2. */
+  uint8_t   dig_h3;     /*!< Humidity compensation value H3. */
+  int16_t   dig_h4;     /*!< Humidity compensation value H4. */
+  int16_t   dig_h5;     /*!< Humidity compensation value H5. */
+  int8_t    dig_h6;     /*!< Humidity compensation value H6. */
 } bme280_compensator_t;
 
 /** 
- * \param
- * \param
+ * \brief Structure for BME280 sensor measurements.
  */
 typedef struct {
-  bme280_humidity_t humidity;
-  bme280_pressure_t pressure;
-  bme280_temperature_t temperature;
-  bme280_compensator_t compensator;
+  bme280_humidity_t humidity;         /*!< Humidity data. */
+  bme280_pressure_t pressure;         /*!< Pressure data. */
+  bme280_temperature_t temperature;   /*!< Temperature data. */
+  bme280_compensator_t compensator;   /*!< Compensator data. */
 } bme280_measurements_t;
 
 /**
@@ -230,80 +212,107 @@ typedef struct {
 }
 
 /** 
- * \param
- * \param
+ * \brief Initialize the BME280 sensor.
+ * 
+ * \param[in]   i2c_num: I2C port number.
+ * \param[in]   settings: Pointer to sensor settings structure.
+ * \return      Result of the initialization.
  */
 bme280_result_t bme280_init(i2c_port_t i2c_num, const bme280_settings_t *settings);
 
 /** 
- * \param
- * \param
+ * \brief Reset the BME280 sensor.
+ * 
+ * \param[in]   i2c_num: I2C port number.
+ * \return      Result of the reset operation.
  */
 bme280_result_t bme280_reset(i2c_port_t i2c_num);
 
 /** 
- * \param
- * \param
+ * \brief Read the sensor ID.
+ * 
+ * \param[in]   i2c_num: I2C port number.
+ * \param[out]  data: Pointer to buffer to store ID data.
+ * \param[in]   data_len: Length of the buffer.
+ * \return      Result of the ID read operation.
  */
 bme280_result_t bme280_id(i2c_port_t i2c_num, uint8_t *data, size_t data_len);
 
 /** 
- * \param
- * \param
+ * \brief Set the sensor to force mode.
+ * 
+ * \param[in]   i2c_num: I2C port number.
+ * \param[in]   settings: Pointer to sensor settings structure.
+ * \return      Result of the operation.
  */
 bme280_result_t bme280_force_mode(i2c_port_t i2c_num, const bme280_settings_t *settings);
 
 /** 
- * \param
- * \param
+ * \brief Measure humidity.
+ * 
+ * \param[in]   i2c_num: I2C port number.
+ * \param[out]  humidity: Pointer to humidity structure to store the measurement.
+ * \return      Result of the humidity measurement.
  */
 bme280_result_t bme280_measure_humidity(i2c_port_t i2c_num, bme280_humidity_t *humidity);
 
 /** 
- * \param
- * \param
+ * \brief Measure temperature.
+ * 
+ * \param[in]   i2c_num: I2C port number.
+ * \param[out]  temperature: Pointer to temperature structure to store the measurement.
+ * \return      Result of the temperature measurement.
  */
 bme280_result_t bme280_measure_temperature(i2c_port_t i2c_num, 
                                            bme280_temperature_t *temperature);
 
 /** 
- * \param
- * \param
+ * \brief Measure pressure.
+ * 
+ * \param[in]   i2c_num: I2C port number.
+ * \param[out]  pressure: Pointer to pressure structure to store the measurement.
+ * \return      Result of the pressure measurement.
  */
 bme280_result_t bme280_measure_pressure(i2c_port_t i2c_num, bme280_pressure_t *pressure);
 
 /** 
- * \param
- * \param
+ * \brief Get sensor compensation data.
+ * 
+ * \param[in]   i2c_num: I2C port number.
+ * \param[out]  compensator: Pointer to compensator structure to store the data.
+ * \return      Result of the compensation data retrieval.
  */
 bme280_result_t bme280_get_compensation_data(i2c_port_t i2c_num, 
                                              bme280_compensator_t *compensator);
 
 /** 
- * \param
- * \param
+ * \brief Compensate the humidity measurement.
+ * 
+ * \param[in]   compensator: Pointer to compensator structure with calibration data.
+ * \param[out]  humidity: Pointer to humidity structure to store compensated value.
+ * \return      Result of the humidity compensation.
  */
 bme280_result_t bme280_compensate_humidity(bme280_compensator_t *compensator, 
                                            bme280_humidity_t *humidity);
 
 /** 
- * \param
- * \param
+ * \brief Compensate the temperature measurement.
+ * 
+ * \param[in]   compensator: Pointer to compensator structure with calibration data.
+ * \param[out]  temperature: Pointer to temperature structure to store compensated value.
+ * \return      Result of the temperature compensation.
  */
 bme280_result_t bme280_compensate_temperature(bme280_compensator_t *compensator, 
                                               bme280_temperature_t *temperature);
 
 /** 
- * \param
- * \param
+ * \brief Compensate the pressure measurement.
+ * 
+ * \param[in]   compensator: Pointer to compensator structure with calibration data.
+ * \param[out]  pressure: Pointer to pressure structure to store compensated value.
+ * \return      Result of the pressure compensation.
  */
 bme280_result_t bme280_compensate_pressure(bme280_compensator_t *compensator, 
                                            bme280_pressure_t *pressure);
-
-/** 
- * \param
- * \param
- */
-bme280_status_t bme280_status(i2c_port_t i2c_num);
 
 #endif // !INC_BME280_H
