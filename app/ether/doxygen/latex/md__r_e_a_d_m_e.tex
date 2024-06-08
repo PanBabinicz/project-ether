@@ -1,0 +1,65 @@
+\chapter{README}
+\hypertarget{md__r_e_a_d_m_e}{}\label{md__r_e_a_d_m_e}\index{README@{README}}
+\texorpdfstring{$\vert$}{|} Supported Targets \texorpdfstring{$\vert$}{|} ESP32 \texorpdfstring{$\vert$}{|} ESP32-\/\+C2 \texorpdfstring{$\vert$}{|} ESP32-\/\+C3 \texorpdfstring{$\vert$}{|} ESP32-\/\+C6 \texorpdfstring{$\vert$}{|} ESP32-\/\+H2 \texorpdfstring{$\vert$}{|} ESP32-\/\+S2 \texorpdfstring{$\vert$}{|} ESP32-\/\+S3 \texorpdfstring{$\vert$}{|} \texorpdfstring{$\vert$}{|} -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/--- \texorpdfstring{$\vert$}{|} -\/-\/--- \texorpdfstring{$\vert$}{|} -\/-\/-\/-\/-\/--- \texorpdfstring{$\vert$}{|} -\/-\/-\/-\/-\/--- \texorpdfstring{$\vert$}{|} -\/-\/-\/-\/-\/--- \texorpdfstring{$\vert$}{|} -\/-\/-\/-\/-\/--- \texorpdfstring{$\vert$}{|} -\/-\/-\/-\/-\/--- \texorpdfstring{$\vert$}{|} -\/-\/-\/-\/-\/--- \texorpdfstring{$\vert$}{|}\hypertarget{md__r_e_a_d_m_e_autotoc_md0}{}\doxysection{\texorpdfstring{Blink Example}{Blink Example}}\label{md__r_e_a_d_m_e_autotoc_md0}
+(See the README.\+md file in the upper level \textquotesingle{}examples\textquotesingle{} directory for more information about examples.)
+
+This example demonstrates how to blink a LED by using the GPIO driver or using the \href{https://components.espressif.com/component/espressif/led_strip}{\texttt{ led\+\_\+strip}} library if the LED is addressable e.\+g. \href{https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf}{\texttt{ WS2812}}. The {\ttfamily led\+\_\+strip} library is installed via \href{main/idf_component.yml}{\texttt{ component manager}}.\hypertarget{md__r_e_a_d_m_e_autotoc_md1}{}\doxysubsection{\texorpdfstring{How to Use Example}{How to Use Example}}\label{md__r_e_a_d_m_e_autotoc_md1}
+Before project configuration and build, be sure to set the correct chip target using {\ttfamily idf.\+py set-\/target \texorpdfstring{$<$}{<}chip\+\_\+name\texorpdfstring{$>$}{>}}.\hypertarget{md__r_e_a_d_m_e_autotoc_md2}{}\doxysubsubsection{\texorpdfstring{Hardware Required}{Hardware Required}}\label{md__r_e_a_d_m_e_autotoc_md2}
+
+\begin{DoxyItemize}
+\item A development board with normal LED or addressable LED on-\/board (e.\+g., ESP32-\/\+S3-\/\+Dev\+KitC, ESP32-\/\+C6-\/\+Dev\+KitC etc.)
+\item A USB cable for Power supply and programming
+\end{DoxyItemize}
+
+See \href{https://www.espressif.com/en/products/devkits}{\texttt{ Development Boards}} for more information about it.\hypertarget{md__r_e_a_d_m_e_autotoc_md3}{}\doxysubsubsection{\texorpdfstring{Configure the Project}{Configure the Project}}\label{md__r_e_a_d_m_e_autotoc_md3}
+Open the project configuration menu ({\ttfamily idf.\+py menuconfig}).
+
+In the {\ttfamily Example Configuration} menu\+:
+
+
+\begin{DoxyItemize}
+\item Select the LED type in the {\ttfamily Blink LED type} option.
+\begin{DoxyItemize}
+\item Use {\ttfamily GPIO} for regular LED
+\item Use {\ttfamily LED strip} for addressable LED
+\end{DoxyItemize}
+\item If the LED type is {\ttfamily LED strip}, select the backend peripheral
+\begin{DoxyItemize}
+\item {\ttfamily RMT} is only available for ESP targets with RMT peripheral supported
+\item {\ttfamily SPI} is available for all ESP targets
+\end{DoxyItemize}
+\item Set the GPIO number used for the signal in the {\ttfamily Blink GPIO number} option.
+\item Set the blinking period in the {\ttfamily Blink period in ms} option.
+\end{DoxyItemize}\hypertarget{md__r_e_a_d_m_e_autotoc_md4}{}\doxysubsubsection{\texorpdfstring{Build and Flash}{Build and Flash}}\label{md__r_e_a_d_m_e_autotoc_md4}
+Run {\ttfamily idf.\+py -\/p PORT flash monitor} to build, flash and monitor the project.
+
+(To exit the serial monitor, type {\ttfamily Ctrl-\/\mbox{]}}.)
+
+See the \href{https://docs.espressif.com/projects/esp-idf/en/latest/get-started/index.html}{\texttt{ Getting Started Guide}} for full steps to configure and use ESP-\/\+IDF to build projects.\hypertarget{md__r_e_a_d_m_e_autotoc_md5}{}\doxysubsection{\texorpdfstring{Example Output}{Example Output}}\label{md__r_e_a_d_m_e_autotoc_md5}
+As you run the example, you will see the LED blinking, according to the previously defined period. For the addressable LED, you can also change the LED color by setting the {\ttfamily led\+\_\+strip\+\_\+set\+\_\+pixel(led\+\_\+strip, 0, 16, 16, 16);} (LED Strip, Pixel Number, Red, Green, Blue) with values from 0 to 255 in the \href{main/blink_example_main.c}{\texttt{ source file}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{I\ (315)\ example:\ Example\ configured\ to\ blink\ addressable\ LED!}
+\DoxyCodeLine{I\ (325)\ example:\ Turning\ the\ LED\ OFF!}
+\DoxyCodeLine{I\ (1325)\ example:\ Turning\ the\ LED\ ON!}
+\DoxyCodeLine{I\ (2325)\ example:\ Turning\ the\ LED\ OFF!}
+\DoxyCodeLine{I\ (3325)\ example:\ Turning\ the\ LED\ ON!}
+\DoxyCodeLine{I\ (4325)\ example:\ Turning\ the\ LED\ OFF!}
+\DoxyCodeLine{I\ (5325)\ example:\ Turning\ the\ LED\ ON!}
+\DoxyCodeLine{I\ (6325)\ example:\ Turning\ the\ LED\ OFF!}
+\DoxyCodeLine{I\ (7325)\ example:\ Turning\ the\ LED\ ON!}
+\DoxyCodeLine{I\ (8325)\ example:\ Turning\ the\ LED\ OFF!}
+
+\end{DoxyCode}
+
+
+Note\+: The color order could be different according to the LED model.
+
+The pixel number indicates the pixel position in the LED strip. For a single LED, use 0.\hypertarget{md__r_e_a_d_m_e_autotoc_md6}{}\doxysubsection{\texorpdfstring{Troubleshooting}{Troubleshooting}}\label{md__r_e_a_d_m_e_autotoc_md6}
+
+\begin{DoxyItemize}
+\item If the LED isn\textquotesingle{}t blinking, check the GPIO or the LED type selection in the {\ttfamily Example Configuration} menu.
+\end{DoxyItemize}
+
+For any technical queries, please open an \href{https://github.com/espressif/esp-idf/issues}{\texttt{ issue}} on Git\+Hub. We will get back to you soon. 
