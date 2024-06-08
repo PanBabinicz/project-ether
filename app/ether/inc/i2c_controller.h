@@ -16,33 +16,30 @@
 #define I2C_CONTROLLER_I2C_ACK   (0x00)
 #define I2C_CONTROLLER_I2C_NACK  (0x01)
 
-#define I2C_CONTROLLER_MASTER_SCL_IO          (GPIO_NUM_22)     /*!< gpio number for I2C master clock */
-#define I2C_CONTROLLER_MASTER_SDA_IO          (GPIO_NUM_21)     /*!< gpio number for I2C master data  */
-#define I2C_CONTROLLER_MASTER_FREQ_HZ         (100000)          /*!< I2C master clock frequency */
-#define I2C_CONTROLLER_MASTER_TX_BUF_DISABLE  (0)               /*!< I2C master doesn't need buffer */
-#define I2C_CONTROLLER_MASTER_RX_BUF_DISABLE  (0)               /*!< I2C master doesn't need buffer */
+#define I2C_CONTROLLER_MASTER_SCL_IO          (GPIO_NUM_22)     /*!< GPIO number for I2C master clock. */
+#define I2C_CONTROLLER_MASTER_SDA_IO          (GPIO_NUM_21)     /*!< GPIO number for I2C master data.  */
+#define I2C_CONTROLLER_MASTER_FREQ_HZ         (100000)          /*!< I2C master clock frequency. */
+#define I2C_CONTROLLER_MASTER_TX_BUF_DISABLE  (0)               /*!< I2C master doesn't need buffer. */
+#define I2C_CONTROLLER_MASTER_RX_BUF_DISABLE  (0)               /*!< I2C master doesn't need buffer. */
 
 /** 
- * \param
- * \param
+ * \brief Result codes for I2C controller operations.
  */
 typedef enum {
-  I2C_CONTROLLER_RESULT_SUCCESS = 0,
-  I2C_CONTROLLER_RESULT_ERROR,
+  I2C_CONTROLLER_RESULT_SUCCESS = 0,  /*!< Operation was successful. */
+  I2C_CONTROLLER_RESULT_ERROR,        /*!< Operation encountered an error. */
 } i2c_controller_result_t;
 
 /** 
- * \param
- * \param
+ * \brief Structure for I2C controller descriptor.
  */
 typedef struct {
-  i2c_config_t config;
-  i2c_port_t i2c_num;
+  i2c_config_t config;          /*!< I2C configuration. */
+  i2c_port_t i2c_num;           /*!< I2C port number. */
 } i2c_controller_descriptor_t;
 
 /** 
- * \param
- * \param
+ * \brief Default configuration for the I2C controller.
  */
 #define I2C_CONTROLLER_CONFIG_DEFAULT {               \
   .mode = I2C_MODE_MASTER,                            \
@@ -54,8 +51,7 @@ typedef struct {
 }
 
 /** 
- * \param
- * \param
+ * \brief Default descriptor for the I2C controller.
  */
 #define I2C_CONTROLLER_DESCRIPTOR_DEFAULT { \
   .config = I2C_CONTROLLER_CONFIG_DEFAULT,  \
@@ -63,22 +59,36 @@ typedef struct {
 }
 
 /** 
- * \param
- * \param
+ * \brief Initialize the I2C controller.
+ * 
+ * \param[in]   descriptor: Pointer to the I2C controller descriptor.
+ * \return      Result of the initialization.
  */
 i2c_controller_result_t i2c_controller_init(const i2c_controller_descriptor_t *descriptor);
 
 /** 
- * \param
- * \param
+ * \brief Send data over I2C.
+ * 
+ * \param[in]   i2c_num: I2C port number.
+ * \param[in]   address: I2C address of the device.
+ * \param[in]   reg: Register address to send data to.
+ * \param[in]   data: Pointer to the data to send.
+ * \param[in]   data_len: Length of the data to send.
+ * \return      Result of the send operation.
  */
 i2c_controller_result_t i2c_controller_send(i2c_port_t i2c_num, uint8_t address, 
                                             uint8_t reg, const uint8_t *data, 
                                             size_t data_len);
 
 /** 
- * \param
- * \param
+ * \brief Receive data over I2C.
+ * 
+ * \param[in]   i2c_num: I2C port number.
+ * \param[in]   address: I2C address of the device.
+ * \param[in]   reg: Register address to receive data from.
+ * \param[out]  data: Pointer to the buffer to store received data.
+ * \param[in]   data_len: Length of the data to receive.
+ * \return      Result of the receive operation.
  */
 i2c_controller_result_t i2c_controller_receive(i2c_port_t i2c_num, uint8_t address, 
                                                uint8_t reg, uint8_t *data, 
