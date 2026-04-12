@@ -37,19 +37,34 @@
 > as well as a power supply unit. Additionally, the project envisages the use of the MQTT protocol,
 > enabling efficient communication between devices, ensuring fast and reliable transmission of sensor data to the server.
 > OpenHAB and Grafana will be deployed on the Raspberry Pi platform.***
->
 
 > [!NOTE]
 > **Please bear in mind that the project was primarily created for enjoyment and educational endeavors.**
 
+## Idea Schematic
+
+![IDEA-SCHEMATIC](https://github.com/PanBabinicz/project-ether/blob/main/doc/screenshots/idea-schematic.png?raw=true)
+
 ## 🔌 Hardware
 
-![Front](https://github.com/PanBabinicz/project-ether/blob/PROJECT-ETHER-REFACTOR/hardware/project-ether-front.png)
+![Front](https://github.com/PanBabinicz/project-ether/blob/PROJECT-ETHER-REFACTOR/hardware/project-ether-front.png?raw=true)
 
-![Back](https://github.com/PanBabinicz/project-ether/blob/PROJECT-ETHER-REFACTOR/hardware/project-ether-back.png)
+![Back](https://github.com/PanBabinicz/project-ether/blob/PROJECT-ETHER-REFACTOR/hardware/project-ether-back.png?raw=true)
 
 > The hardware for this project was meticulously designed using KiCad, a popular open-source electronic design automation software. 
 > The board is a 4-layer design featuring the ESP32-WROOM-32 module at its core. Additionally, it integrates key sensors such as the BME280 and SCD41,
 > enabling environmental monitoring capabilities.
 >
 > The device can be conveniently powered either via USB Type-C connection or an external battery, providing flexibility for different usage scenarios and environments.
+
+## 📖 Software
+
+### Logic Analyzer Output
+
+#### BME280
+
+![BME280](https://github.com/PanBabinicz/project-ether/blob/main/doc/screenshots/bme280.png?raw=true)
+
+#### PMS7003
+
+![PMS7003](https://github.com/PanBabinicz/project-ether/blob/main/doc/screenshots/pms7003.png?raw=true)
